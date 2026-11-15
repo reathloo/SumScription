@@ -185,9 +185,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     /// <summary>Wahr, wenn ein Overlay die Tastatur abfängt.</summary>
     public bool IsOverlayOpen => IsPaywallVisible || IsCheckoutVisible;
 
-    /// <summary>Wahr, wenn das Preisblatt gerade die höchste Ebene ist.</summary>
-    public bool IsPaywallSheetVisible => IsPaywallVisible && !IsCheckoutVisible;
-
     /// <summary>Die Zeilen des Rechenbands, neueste zuerst.</summary>
     public ObservableCollection<HistoryRow> History => _history;
 
@@ -213,7 +210,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
 
         _session.InputDigit(digit);
-        AfterInput();
+        Refresh();
     }
 
     /// <summary>Verarbeitet das Dezimaltrennzeichen.</summary>
@@ -336,7 +333,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             if (IsCheckoutVisible)
             {
                 IsCheckoutVisible = false;
-                RaisePropertyChanged(nameof(IsPaywallSheetVisible));
             }
 
             return;
@@ -344,7 +340,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         IsCheckoutVisible = false;
         IsPaywallVisible = true;
-        RaisePropertyChanged(nameof(IsPaywallSheetVisible));
         PaywallOpened?.Invoke(this, EventArgs.Empty);
     }
 
@@ -358,7 +353,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         IsCheckoutVisible = false;
         IsPaywallVisible = false;
-        RaisePropertyChanged(nameof(IsPaywallSheetVisible));
         OverlaysClosed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -371,7 +365,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
 
         IsCheckoutVisible = false;
-        RaisePropertyChanged(nameof(IsPaywallSheetVisible));
         CheckoutClosed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -388,7 +381,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         RaisePropertyChanged(nameof(CheckoutPlanLine));
         RaisePropertyChanged(nameof(CheckoutNoteLine));
         IsCheckoutVisible = true;
-        RaisePropertyChanged(nameof(IsPaywallSheetVisible));
         CheckoutOpened?.Invoke(this, EventArgs.Empty);
     }
 
@@ -404,7 +396,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         IsCheckoutVisible = false;
         IsPaywallVisible = false;
         Refresh();
-        RaisePropertyChanged(nameof(IsPaywallSheetVisible));
         OverlaysClosed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -415,7 +406,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         IsCheckoutVisible = false;
         IsPaywallVisible = false;
         Refresh();
-        RaisePropertyChanged(nameof(IsPaywallSheetVisible));
         OverlaysClosed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -464,8 +454,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         action();
         Refresh();
     }
-
-    private void AfterInput() => Refresh();
 
     private void SelectPlan(string text)
     {

@@ -32,10 +32,10 @@
                 VerticalAlignment="Center">
           <StackPanel Orientation="Horizontal" Spacing="6">
             <Ellipse Name="PlanLed"
+                     Classes="led"
                      Classes.led-on="{Binding IsUnlocked}"
                      Width="6"
                      Height="6"
-                     Fill="{DynamicResource TextSecondaryBrush}"
                      VerticalAlignment="Center" />
             <TextBlock Classes="meta secondary"
                        Text="{Binding PlanChipText}"
@@ -57,11 +57,13 @@
                                        IsHitTestVisible="False" />
             <Grid RowDefinitions="Auto,*">
               <TextBlock Classes="expression paper-ink-soft"
+                         AutomationProperties.Name="Ausdruck"
                          Text="{Binding ExpressionText}"
                          VerticalAlignment="Top" />
               <Grid Grid.Row="1">
                 <TextBlock Name="ResultLine"
                            Classes="result paper-ink"
+                           AutomationProperties.Name="Ergebnis"
                            Classes.masked="{Binding IsResultMasked}"
                            IsVisible="{Binding !HasError}"
                            Text="{Binding DisplayResult}"
@@ -74,6 +76,7 @@
                 </TextBlock>
                 <TextBlock Name="ErrorLine"
                            Classes="error"
+                           AutomationProperties.Name="Fehler"
                            Text="{Binding DisplayResult}"
                            IsVisible="{Binding HasError}"
                            VerticalAlignment="Bottom">

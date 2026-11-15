@@ -218,7 +218,11 @@
     <Setter Property="Foreground" Value="{DynamicResource PaperInkSoftBrush}" />
   </Style>
 
-  <Style Selector="Ellipse.led-on">
+  <Style Selector="Ellipse.led">
+    <Setter Property="Fill" Value="{DynamicResource TextSecondaryBrush}" />
+  </Style>
+
+  <Style Selector="Ellipse.led.led-on">
     <Setter Property="Fill" Value="{DynamicResource AccentBrush}" />
   </Style>
 
