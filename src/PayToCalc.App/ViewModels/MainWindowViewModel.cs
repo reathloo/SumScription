@@ -156,6 +156,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     /// <summary>Wahr, wenn die Demo freigeschaltet ist.</summary>
     public bool IsUnlocked => _session.Paywall.State.IsUnlocked;
 
+    /// <summary>Barrierefreier Name der Ergebniszeile; maskiert gibt er den Wert nicht preis.</summary>
+    public string ResultAutomationName => IsResultMasked ? "Ergebnis verdeckt" : "Ergebnis";
+
     /// <summary>Wahr, wenn das Preisblatt sichtbar ist.</summary>
     public bool IsPaywallVisible
     {
@@ -475,6 +478,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         ExpressionText = _session.ExpressionText;
         HasError = _session.HasError;
         IsResultMasked = _session.IsResultMasked;
+        RaisePropertyChanged(nameof(ResultAutomationName));
         DisplayResult = _session.DisplayResult;
         PlanChipText = BuildPlanChipText();
         RaisePropertyChanged(nameof(IsUnlocked));

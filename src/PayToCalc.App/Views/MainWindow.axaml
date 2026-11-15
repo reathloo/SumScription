@@ -63,7 +63,7 @@
               <Grid Grid.Row="1">
                 <TextBlock Name="ResultLine"
                            Classes="result paper-ink"
-                           AutomationProperties.Name="Ergebnis"
+                           AutomationProperties.Name="{Binding ResultAutomationName}"
                            Classes.masked="{Binding IsResultMasked}"
                            IsVisible="{Binding !HasError}"
                            Text="{Binding DisplayResult}"
