@@ -1,69 +1,97 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Dark">
-      <SolidColorBrush x:Key="ChassisBrush" Color="#141A1F" />
-      <SolidColorBrush x:Key="RaisedBrush" Color="#232C34" />
-      <SolidColorBrush x:Key="RaisedHoverBrush" Color="#2A343D" />
-      <SolidColorBrush x:Key="RaisedPressedBrush" Color="#1B232A" />
-      <SolidColorBrush x:Key="SunkenBrush" Color="#171E24" />
-      <SolidColorBrush x:Key="SunkenHoverBrush" Color="#1F272E" />
-      <SolidColorBrush x:Key="SunkenPressedBrush" Color="#11171C" />
-      <SolidColorBrush x:Key="KeyEdgeBrush" Color="#3A4550" />
-      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E8EDF2" />
-      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#9FAAB8" />
-      <SolidColorBrush x:Key="AccentBrush" Color="#35D6BA" />
-      <SolidColorBrush x:Key="AccentHoverBrush" Color="#4BE2C8" />
-      <SolidColorBrush x:Key="AccentPressedBrush" Color="#27BFA6" />
-      <SolidColorBrush x:Key="AccentTextBrush" Color="#04211C" />
-      <SolidColorBrush x:Key="FocusBrush" Color="#62C8FF" />
-      <SolidColorBrush x:Key="DangerBrush" Color="#A8261C" />
-      <SolidColorBrush x:Key="BrassBrush" Color="#8A6414" />
-      <SolidColorBrush x:Key="PaperBrush" Color="#EDF0F1" />
-      <SolidColorBrush x:Key="PaperEdgeBrush" Color="#6E7C8A" />
-      <SolidColorBrush x:Key="PaperInkBrush" Color="#11161A" />
-      <SolidColorBrush x:Key="PaperInkSoftBrush" Color="#4A555F" />
-      <SolidColorBrush x:Key="ScrimBrush" Color="#E605080B" />
-      <SolidColorBrush x:Key="ChipBrush" Color="#1C242B" />
-      <SolidColorBrush x:Key="ChipEdgeBrush" Color="#3A4550" />
-      <SolidColorBrush x:Key="PaperHoverBrush" Color="#1A11161A" />
-      <SolidColorBrush x:Key="PaperPressedBrush" Color="#2911161A" />
+      <LinearGradientBrush x:Key="WindowBackdropBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Color="#F20B1224" Offset="0" />
+        <GradientStop Color="#ED172344" Offset="0.56" />
+        <GradientStop Color="#F00B1020" Offset="1" />
+      </LinearGradientBrush>
+      <SolidColorBrush x:Key="GlassBrush" Color="#A6243152" />
+      <SolidColorBrush x:Key="GlassStrongBrush" Color="#D51B2744" />
+      <SolidColorBrush x:Key="GlassHoverBrush" Color="#D936466D" />
+      <SolidColorBrush x:Key="GlassPressedBrush" Color="#E1172039" />
+      <SolidColorBrush x:Key="GlassEdgeBrush" Color="#38FFFFFF" />
+      <SolidColorBrush x:Key="GlassEdgeStrongBrush" Color="#62FFFFFF" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFF8FBFF" />
+      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#BBD3DDF3" />
+      <SolidColorBrush x:Key="TextTertiaryBrush" Color="#7EA9B6D1" />
+      <SolidColorBrush x:Key="OperatorBrush" Color="#FFF49A58" />
+      <SolidColorBrush x:Key="OperatorHoverBrush" Color="#FFFFAE75" />
+      <SolidColorBrush x:Key="OperatorPressedBrush" Color="#FFDB7F40" />
+      <SolidColorBrush x:Key="OperatorTextBrush" Color="#FF2B1205" />
+      <SolidColorBrush x:Key="FunctionBrush" Color="#A6435272" />
+      <SolidColorBrush x:Key="FunctionHoverBrush" Color="#CE566888" />
+      <SolidColorBrush x:Key="FunctionPressedBrush" Color="#E5323E5D" />
+      <SolidColorBrush x:Key="FocusBrush" Color="#FFE9B98C" />
+      <SolidColorBrush x:Key="FocusInnerBrush" Color="#FF15203A" />
+      <SolidColorBrush x:Key="DangerBrush" Color="#FFFF7B77" />
+      <SolidColorBrush x:Key="ScrimBrush" Color="#B8040812" />
+      <LinearGradientBrush x:Key="PaywallBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Color="#FA3511A8" Offset="0" />
+        <GradientStop Color="#FCF20B73" Offset="0.44" />
+        <GradientStop Color="#FCFF6138" Offset="0.76" />
+        <GradientStop Color="#FA5420D7" Offset="1" />
+      </LinearGradientBrush>
+      <SolidColorBrush x:Key="PaywallEdgeBrush" Color="#B8FFFFFF" />
+      <SolidColorBrush x:Key="PaywallAccentBrush" Color="#FFFFF36D" />
+      <SolidColorBrush x:Key="PaywallSoftBrush" Color="#D8FFE9F0" />
+      <SolidColorBrush x:Key="PaywallButtonBrush" Color="#FF54F3FF" />
+      <SolidColorBrush x:Key="PaywallButtonTextBrush" Color="#FF4A075D" />
+      <SolidColorBrush x:Key="PaywallWarningBrush" Color="#FFFFF36D" />
+      <SolidColorBrush x:Key="PaywallWarningTextBrush" Color="#FF47102F" />
+      <SolidColorBrush x:Key="PaywallCyanBrush" Color="#FF54F3FF" />
+      <SolidColorBrush x:Key="PaywallHotBrush" Color="#FFFF5A8F" />
+      <SolidColorBrush x:Key="OrbOneBrush" Color="#884E6FFF" />
+      <SolidColorBrush x:Key="OrbTwoBrush" Color="#66EE6C9A" />
     </ResourceDictionary>
 
     <ResourceDictionary x:Key="Light">
-      <SolidColorBrush x:Key="ChassisBrush" Color="#E1E6EB" />
-      <SolidColorBrush x:Key="RaisedBrush" Color="#F4F7F9" />
-      <SolidColorBrush x:Key="RaisedHoverBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="RaisedPressedBrush" Color="#E7EBEF" />
-      <SolidColorBrush x:Key="SunkenBrush" Color="#D3DAE0" />
-      <SolidColorBrush x:Key="SunkenHoverBrush" Color="#DCE2E7" />
-      <SolidColorBrush x:Key="SunkenPressedBrush" Color="#C6CFD6" />
-      <SolidColorBrush x:Key="KeyEdgeBrush" Color="#C7CFD6" />
-      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#10151A" />
-      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#4E5966" />
-      <SolidColorBrush x:Key="AccentBrush" Color="#0E7A6E" />
-      <SolidColorBrush x:Key="AccentHoverBrush" Color="#11897B" />
-      <SolidColorBrush x:Key="AccentPressedBrush" Color="#0A6359" />
-      <SolidColorBrush x:Key="AccentTextBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="FocusBrush" Color="#0A6C9E" />
-      <SolidColorBrush x:Key="DangerBrush" Color="#A8261C" />
-      <SolidColorBrush x:Key="BrassBrush" Color="#8A6414" />
-      <SolidColorBrush x:Key="PaperBrush" Color="#EDF0F1" />
-      <SolidColorBrush x:Key="PaperEdgeBrush" Color="#11161A" />
-      <SolidColorBrush x:Key="PaperInkBrush" Color="#11161A" />
-      <SolidColorBrush x:Key="PaperInkSoftBrush" Color="#4A555F" />
-      <SolidColorBrush x:Key="ScrimBrush" Color="#AD0B1016" />
-      <SolidColorBrush x:Key="ChipBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="ChipEdgeBrush" Color="#C7CFD6" />
-      <SolidColorBrush x:Key="PaperHoverBrush" Color="#1A11161A" />
-      <SolidColorBrush x:Key="PaperPressedBrush" Color="#2911161A" />
+      <LinearGradientBrush x:Key="WindowBackdropBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Color="#EEF2F8FF" Offset="0" />
+        <GradientStop Color="#E7DCE7FA" Offset="0.56" />
+        <GradientStop Color="#EEF6F0F4" Offset="1" />
+      </LinearGradientBrush>
+      <SolidColorBrush x:Key="GlassBrush" Color="#9FFFFFFF" />
+      <SolidColorBrush x:Key="GlassStrongBrush" Color="#D9FFFFFF" />
+      <SolidColorBrush x:Key="GlassHoverBrush" Color="#F4FFFFFF" />
+      <SolidColorBrush x:Key="GlassPressedBrush" Color="#CBE4E8F1" />
+      <SolidColorBrush x:Key="GlassEdgeBrush" Color="#72FFFFFF" />
+      <SolidColorBrush x:Key="GlassEdgeStrongBrush" Color="#9AFFFFFF" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FF14203A" />
+      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#C34A5872" />
+      <SolidColorBrush x:Key="TextTertiaryBrush" Color="#8A66728A" />
+      <SolidColorBrush x:Key="OperatorBrush" Color="#FFF09254" />
+      <SolidColorBrush x:Key="OperatorHoverBrush" Color="#FFFFA86E" />
+      <SolidColorBrush x:Key="OperatorPressedBrush" Color="#FFDA783A" />
+      <SolidColorBrush x:Key="OperatorTextBrush" Color="#FF351603" />
+      <SolidColorBrush x:Key="FunctionBrush" Color="#BFD4DBE9" />
+      <SolidColorBrush x:Key="FunctionHoverBrush" Color="#E2E8ECF5" />
+      <SolidColorBrush x:Key="FunctionPressedBrush" Color="#D0C2CBDD" />
+      <SolidColorBrush x:Key="FocusBrush" Color="#FF9B4B18" />
+      <SolidColorBrush x:Key="FocusInnerBrush" Color="#FFFFFFFF" />
+      <SolidColorBrush x:Key="DangerBrush" Color="#FFB42329" />
+      <SolidColorBrush x:Key="ScrimBrush" Color="#7A11182A" />
+      <LinearGradientBrush x:Key="PaywallBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Color="#FA4314B6" Offset="0" />
+        <GradientStop Color="#FCF51379" Offset="0.44" />
+        <GradientStop Color="#FCFF6A3E" Offset="0.76" />
+        <GradientStop Color="#FA5B24DC" Offset="1" />
+      </LinearGradientBrush>
+      <SolidColorBrush x:Key="PaywallEdgeBrush" Color="#B8FFFFFF" />
+      <SolidColorBrush x:Key="PaywallAccentBrush" Color="#FFFFF36D" />
+      <SolidColorBrush x:Key="PaywallSoftBrush" Color="#E8FFF3F6" />
+      <SolidColorBrush x:Key="PaywallButtonBrush" Color="#FF54F3FF" />
+      <SolidColorBrush x:Key="PaywallButtonTextBrush" Color="#FF4A075D" />
+      <SolidColorBrush x:Key="PaywallWarningBrush" Color="#FFFFF36D" />
+      <SolidColorBrush x:Key="PaywallWarningTextBrush" Color="#FF47102F" />
+      <SolidColorBrush x:Key="PaywallCyanBrush" Color="#FF54F3FF" />
+      <SolidColorBrush x:Key="PaywallHotBrush" Color="#FFFF5A8F" />
+      <SolidColorBrush x:Key="OrbOneBrush" Color="#5B5579FF" />
+      <SolidColorBrush x:Key="OrbTwoBrush" Color="#4CEE719D" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <SolidColorBrush x:Key="FocusInnerBrush" Color="#11161A" />
-
-  <FontFamily x:Key="SansFont">SF Pro Text, Segoe UI Variable Text, Segoe UI, Roboto, Noto Sans, Ubuntu Sans, Cantarell</FontFamily>
-  <FontFamily x:Key="MonoFont">SF Mono, Menlo, Cascadia Mono, Consolas, Ubuntu Mono, DejaVu Sans Mono</FontFamily>
-
+  <FontFamily x:Key="SansFont">SF Pro Display, SF Pro Text, Segoe UI Variable Text, Segoe UI, Inter</FontFamily>
+  <FontFamily x:Key="NumberFont">SF Pro Display, SF Pro Rounded, SF Pro Text, Segoe UI Variable Display, Segoe UI</FontFamily>
 </ResourceDictionary>

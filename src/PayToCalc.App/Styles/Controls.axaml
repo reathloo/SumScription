@@ -1,95 +1,31 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
   <Styles.Resources>
-
-    <!-- Grundgerüst aller Tasten: Fläche, Inhalt, Fokusring, Übergänge. -->
     <ControlTheme x:Key="CalcKeyTheme" TargetType="Button">
       <Setter Property="Padding" Value="0" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="BorderBrush" Value="{DynamicResource KeyEdgeBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource GlassEdgeBrush}" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
-      <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
-      <Setter Property="FontSize" Value="17" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="FocusAdorner" Value="{x:Null}" />
-      <Setter Property="Template">
-        <ControlTemplate>
-          <Panel>
-            <Border Name="PART_Surface"
-                    Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="4">
-              <Border.Transitions>
-                <Transitions>
-                  <BrushTransition Property="Background" Duration="0:0:0.08" />
-                  <BrushTransition Property="BorderBrush" Duration="0:0:0.08" />
-                  <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.08" />
-                </Transitions>
-              </Border.Transitions>
-              <ContentPresenter Name="PART_ContentPresenter"
-                                Content="{TemplateBinding Content}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Padding="{TemplateBinding Padding}"
-                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                TextBlock.Foreground="{TemplateBinding Foreground}"
-                                TextBlock.FontFamily="{TemplateBinding FontFamily}"
-                                TextBlock.FontSize="{TemplateBinding FontSize}"
-                                TextBlock.FontWeight="{TemplateBinding FontWeight}" />
-            </Border>
-            <Border Name="PART_FocusRing"
-                    IsVisible="False"
-                    CornerRadius="4"
-                    BorderThickness="2"
-                    BorderBrush="{DynamicResource FocusBrush}" />
-            <Border Name="PART_FocusInner"
-                    IsVisible="False"
-                    Margin="2"
-                    CornerRadius="2"
-                    BorderThickness="1"
-                    BorderBrush="{DynamicResource FocusInnerBrush}" />
-          </Panel>
-        </ControlTemplate>
-      </Setter>
-
-      <Style Selector="^:focus /template/ Border#PART_FocusRing">
-        <Setter Property="IsVisible" Value="True" />
-      </Style>
-      <Style Selector="^:focus /template/ Border#PART_FocusInner">
-        <Setter Property="IsVisible" Value="True" />
-      </Style>
-    </ControlTheme>
-
-    <!-- Flache Leisten- und Blattknöpfe. -->
-    <ControlTheme x:Key="BarButtonTheme" TargetType="Button">
-      <Setter Property="MinHeight" Value="32" />
-      <Setter Property="Padding" Value="12,0" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="BorderBrush" Value="{DynamicResource KeyEdgeBrush}" />
-      <Setter Property="CornerRadius" Value="3" />
-      <Setter Property="FontFamily" Value="{StaticResource SansFont}" />
-      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontFamily" Value="{StaticResource NumberFont}" />
+      <Setter Property="FontSize" Value="22" />
       <Setter Property="FontWeight" Value="Medium" />
-      <Setter Property="HorizontalContentAlignment" Value="Center" />
-      <Setter Property="VerticalContentAlignment" Value="Center" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="FocusAdorner" Value="{x:Null}" />
       <Setter Property="Template">
         <ControlTemplate>
-          <Panel>
+          <Panel RenderTransformOrigin="50%,50%">
             <Border Name="PART_Surface"
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="{TemplateBinding CornerRadius}">
+                    CornerRadius="18"
+                    RenderTransformOrigin="50%,50%">
               <Border.Transitions>
                 <Transitions>
-                  <BrushTransition Property="Background" Duration="0:0:0.08" />
-                  <BrushTransition Property="BorderBrush" Duration="0:0:0.08" />
+                  <BrushTransition Property="Background" Duration="0:0:0.1" />
+                  <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                  <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
                 </Transitions>
               </Border.Transitions>
               <ContentPresenter Content="{TemplateBinding Content}"
@@ -104,213 +40,189 @@
             </Border>
             <Border Name="PART_FocusRing"
                     IsVisible="False"
-                    CornerRadius="{TemplateBinding CornerRadius}"
+                    CornerRadius="18"
                     BorderThickness="2"
                     BorderBrush="{DynamicResource FocusBrush}" />
             <Border Name="PART_FocusInner"
                     IsVisible="False"
-                    Margin="2"
-                    CornerRadius="2"
+                    Margin="3"
+                    CornerRadius="15"
                     BorderThickness="1"
                     BorderBrush="{DynamicResource FocusInnerBrush}" />
           </Panel>
         </ControlTemplate>
       </Setter>
-
-      <Style Selector="^:focus /template/ Border#PART_FocusRing">
+      <Style Selector="^:focus-visible /template/ Border#PART_FocusRing">
         <Setter Property="IsVisible" Value="True" />
       </Style>
-      <Style Selector="^:focus /template/ Border#PART_FocusInner">
+      <Style Selector="^:focus-visible /template/ Border#PART_FocusInner">
         <Setter Property="IsVisible" Value="True" />
       </Style>
     </ControlTheme>
 
+    <ControlTheme x:Key="GlassButtonTheme" TargetType="Button">
+      <Setter Property="MinHeight" Value="34" />
+      <Setter Property="Padding" Value="14,0" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource GlassEdgeBrush}" />
+      <Setter Property="FontFamily" Value="{StaticResource SansFont}" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Panel>
+            <Border Name="PART_Surface"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="12"
+                    RenderTransformOrigin="50%,50%">
+              <Border.Transitions>
+                <Transitions>
+                  <BrushTransition Property="Background" Duration="0:0:0.1" />
+                  <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+                </Transitions>
+              </Border.Transitions>
+              <ContentPresenter Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                TextBlock.Foreground="{TemplateBinding Foreground}"
+                                TextBlock.FontFamily="{TemplateBinding FontFamily}"
+                                TextBlock.FontSize="{TemplateBinding FontSize}"
+                                TextBlock.FontWeight="{TemplateBinding FontWeight}" />
+            </Border>
+            <Border Name="PART_FocusRing" IsVisible="False" CornerRadius="12"
+                    BorderThickness="2" BorderBrush="{DynamicResource FocusBrush}" />
+          </Panel>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:focus-visible /template/ Border#PART_FocusRing">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+    </ControlTheme>
   </Styles.Resources>
 
-  <!-- Typografie -->
   <Style Selector="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource SansFont}" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-    <Setter Property="TextWrapping" Value="NoWrap" />
   </Style>
-
   <Style Selector="TextBlock.result">
-    <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
-    <Setter Property="FontSize" Value="30" />
-    <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="LetterSpacing" Value="-0.3" />
-    <Setter Property="LineHeight" Value="34" />
-    <Setter Property="HorizontalAlignment" Value="Right" />
-    <Setter Property="TextAlignment" Value="Right" />
-  </Style>
-
-  <Style Selector="TextBlock.result.masked">
-    <Setter Property="Opacity" Value="0.35" />
-    <Setter Property="Effect">
-      <BlurEffect Radius="6" />
-    </Setter>
-  </Style>
-
-  <Style Selector="TextBlock.expression">
-    <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
-    <Setter Property="FontSize" Value="14" />
-    <Setter Property="FontWeight" Value="Medium" />
-    <Setter Property="LineHeight" Value="20" />
+    <Setter Property="FontFamily" Value="{StaticResource NumberFont}" />
+    <Setter Property="FontSize" Value="54" />
+    <Setter Property="FontWeight" Value="Light" />
+    <Setter Property="LetterSpacing" Value="-1.8" />
+    <Setter Property="LineHeight" Value="62" />
     <Setter Property="HorizontalAlignment" Value="Right" />
     <Setter Property="TextAlignment" Value="Right" />
     <Setter Property="TextTrimming" Value="CharacterEllipsis" />
   </Style>
-
+  <Style Selector="TextBlock.result.masked">
+    <Setter Property="Opacity" Value="0.24" />
+    <Setter Property="Effect"><BlurEffect Radius="10" /></Setter>
+  </Style>
+  <Style Selector="TextBlock.expression">
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="TextAlignment" Value="Right" />
+    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+  </Style>
   <Style Selector="TextBlock.error">
-    <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
-    <Setter Property="FontSize" Value="20" />
+    <Setter Property="FontSize" Value="22" />
     <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
     <Setter Property="HorizontalAlignment" Value="Right" />
     <Setter Property="TextAlignment" Value="Right" />
     <Setter Property="TextWrapping" Value="Wrap" />
   </Style>
-
   <Style Selector="TextBlock.history">
-    <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
     <Setter Property="FontSize" Value="12" />
-    <Setter Property="FontWeight" Value="Medium" />
-    <Setter Property="LineHeight" Value="18" />
-    <Setter Property="Foreground" Value="{DynamicResource PaperInkSoftBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
     <Setter Property="TextTrimming" Value="CharacterEllipsis" />
   </Style>
-
   <Style Selector="TextBlock.history-result">
-    <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
     <Setter Property="FontSize" Value="12" />
-    <Setter Property="FontWeight" Value="Medium" />
-    <Setter Property="LineHeight" Value="18" />
-    <Setter Property="Foreground" Value="{DynamicResource PaperInkBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="HorizontalAlignment" Value="Right" />
     <Setter Property="TextAlignment" Value="Right" />
   </Style>
-
   <Style Selector="TextBlock.meta">
-    <Setter Property="FontFamily" Value="{StaticResource SansFont}" />
-    <Setter Property="FontSize" Value="11" />
-    <Setter Property="FontWeight" Value="Medium" />
-    <Setter Property="LetterSpacing" Value="0.2" />
-    <Setter Property="LineHeight" Value="16" />
-  </Style>
-
-  <Style Selector="TextBlock.title">
-    <Setter Property="FontFamily" Value="{StaticResource SansFont}" />
-    <Setter Property="FontSize" Value="17" />
-    <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="LetterSpacing" Value="-0.17" />
-    <Setter Property="LineHeight" Value="22" />
-  </Style>
-
-  <Style Selector="TextBlock.secondary">
-    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
-  </Style>
-
-  <Style Selector="TextBlock.paper-ink">
-    <Setter Property="Foreground" Value="{DynamicResource PaperInkBrush}" />
-  </Style>
-
-  <Style Selector="TextBlock.paper-ink-soft">
-    <Setter Property="Foreground" Value="{DynamicResource PaperInkSoftBrush}" />
-  </Style>
-
-  <Style Selector="Ellipse.led">
-    <Setter Property="Fill" Value="{DynamicResource TextSecondaryBrush}" />
-  </Style>
-
-  <Style Selector="Ellipse.led.led-on">
-    <Setter Property="Fill" Value="{DynamicResource AccentBrush}" />
-  </Style>
-
-  <!-- Zifferntasten -->
-  <Style Selector="Button.digit">
-    <Setter Property="Background" Value="{DynamicResource RaisedBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-  </Style>
-  <Style Selector="Button.digit:pointerover /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource RaisedHoverBrush}" />
-  </Style>
-  <Style Selector="Button.digit:pressed /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource RaisedPressedBrush}" />
-    <Setter Property="RenderTransform" Value="translateY(1px)" />
-  </Style>
-
-  <!-- Funktionstasten -->
-  <Style Selector="Button.function">
-    <Setter Property="Background" Value="{DynamicResource SunkenBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
-  </Style>
-  <Style Selector="Button.function:pointerover /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource SunkenHoverBrush}" />
-  </Style>
-  <Style Selector="Button.function:pressed /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource SunkenPressedBrush}" />
-    <Setter Property="RenderTransform" Value="translateY(1px)" />
-  </Style>
-
-  <!-- Gleichheitstaste -->
-  <Style Selector="Button.equals">
-    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="FontSize" Value="22" />
-  </Style>
-  <Style Selector="Button.equals:pointerover /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}" />
-  </Style>
-  <Style Selector="Button.equals:pressed /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentPressedBrush}" />
-    <Setter Property="RenderTransform" Value="translateY(1px)" />
-  </Style>
-
-  <!-- Leistenknöpfe -->
-  <Style Selector="Button.bar">
-    <Setter Property="Background" Value="{DynamicResource SunkenBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-  </Style>
-  <Style Selector="Button.bar:pointerover /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource SunkenHoverBrush}" />
-  </Style>
-  <Style Selector="Button.bar:pressed /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource SunkenPressedBrush}" />
-  </Style>
-
-  <Style Selector="Button.bar.primary">
-    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
-  </Style>
-  <Style Selector="Button.bar.primary:pointerover /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}" />
-  </Style>
-  <Style Selector="Button.bar.primary:pressed /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentPressedBrush}" />
-  </Style>
-
-  <!-- Tarifzeilen auf dem Preisblatt -->
-  <Style Selector="Button.plan">
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="{DynamicResource PaperInkSoftBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource PaperInkBrush}" />
-    <Setter Property="CornerRadius" Value="2" />
-    <Setter Property="MinHeight" Value="56" />
-    <Setter Property="Padding" Value="12,8" />
-    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="Medium" />
   </Style>
-  <Style Selector="Button.plan:pointerover /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource PaperHoverBrush}" />
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontSize" Value="26" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LetterSpacing" Value="-0.6" />
   </Style>
-  <Style Selector="Button.plan:pressed /template/ Border#PART_Surface">
-    <Setter Property="Background" Value="{DynamicResource PaperPressedBrush}" />
+  <Style Selector="TextBlock.secondary"><Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" /></Style>
+  <Style Selector="TextBlock.tertiary"><Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" /></Style>
+
+  <Style Selector="Button.calc"><Setter Property="Theme" Value="{StaticResource CalcKeyTheme}" /></Style>
+  <Style Selector="Button.digit">
+    <Setter Property="Background" Value="{DynamicResource GlassBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+  <Style Selector="Button.digit:pointerover /template/ Border#PART_Surface"><Setter Property="Background" Value="{DynamicResource GlassHoverBrush}" /></Style>
+  <Style Selector="Button.digit:pressed /template/ Border#PART_Surface">
+    <Setter Property="Background" Value="{DynamicResource GlassPressedBrush}" />
+    <Setter Property="RenderTransform" Value="scale(0.96)" />
+  </Style>
+  <Style Selector="Button.function">
+    <Setter Property="Background" Value="{DynamicResource FunctionBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    <Setter Property="FontSize" Value="18" />
+  </Style>
+  <Style Selector="Button.function:pointerover /template/ Border#PART_Surface"><Setter Property="Background" Value="{DynamicResource FunctionHoverBrush}" /></Style>
+  <Style Selector="Button.function:pressed /template/ Border#PART_Surface">
+    <Setter Property="Background" Value="{DynamicResource FunctionPressedBrush}" />
+    <Setter Property="RenderTransform" Value="scale(0.96)" />
+  </Style>
+  <Style Selector="Button.operator">
+    <Setter Property="Background" Value="{DynamicResource OperatorBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OperatorTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource GlassEdgeStrongBrush}" />
+    <Setter Property="FontSize" Value="25" />
+  </Style>
+  <Style Selector="Button.operator:pointerover /template/ Border#PART_Surface"><Setter Property="Background" Value="{DynamicResource OperatorHoverBrush}" /></Style>
+  <Style Selector="Button.operator:pressed /template/ Border#PART_Surface">
+    <Setter Property="Background" Value="{DynamicResource OperatorPressedBrush}" />
+    <Setter Property="RenderTransform" Value="scale(0.96)" />
   </Style>
 
+  <Style Selector="Button.glass"><Setter Property="Theme" Value="{StaticResource GlassButtonTheme}" />
+    <Setter Property="Background" Value="{DynamicResource GlassBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+  <Style Selector="Button.glass:pointerover /template/ Border#PART_Surface"><Setter Property="Background" Value="{DynamicResource GlassHoverBrush}" /></Style>
+  <Style Selector="Button.glass:pressed /template/ Border#PART_Surface"><Setter Property="RenderTransform" Value="scale(0.97)" /></Style>
+  <Style Selector="Button.plan"><Setter Property="Theme" Value="{StaticResource GlassButtonTheme}" />
+    <Setter Property="MinHeight" Value="82" />
+    <Setter Property="Padding" Value="16,10" />
+    <Setter Property="Background" Value="#26FFFFFF" />
+    <Setter Property="BorderBrush" Value="#58FFFFFF" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="Button.plan:pointerover /template/ Border#PART_Surface"><Setter Property="Background" Value="#3EFFFFFF" /></Style>
+  <Style Selector="Button.paywall-primary"><Setter Property="Theme" Value="{StaticResource GlassButtonTheme}" />
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Background" Value="{DynamicResource PaywallButtonBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource PaywallButtonTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource PaywallButtonBrush}" />
+    <Setter Property="FontSize" Value="14" />
+  </Style>
+  <Style Selector="Button.paywall-secondary"><Setter Property="Theme" Value="{StaticResource GlassButtonTheme}" />
+    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="Background" Value="#16FFFFFF" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="BorderBrush" Value="#3FFFFFFF" />
+  </Style>
 </Styles>

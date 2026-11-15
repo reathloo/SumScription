@@ -17,12 +17,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private bool _paywallShownThisRun;
     private bool _isPaywallVisible;
     private bool _isCheckoutVisible;
+    private int _paywallDismissalStep;
     private PaywallPlan _selectedPlan = PaywallPlan.Subscription;
     private string _expressionText = string.Empty;
     private string _displayResult = "0";
     private bool _hasError;
     private bool _isResultMasked;
-    private string _planChipText = string.Empty;
 
     /// <summary>Erzeugt das ViewModel für eine Sitzung.</summary>
     public MainWindowViewModel(CalculatorSession session)
@@ -44,7 +44,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         SelectPlanCommand = new RelayCommand(parameter => SelectPlan(AsText(parameter)));
         ConfirmPurchaseCommand = new RelayCommand(_ => ConfirmPurchase());
         CancelPurchaseCommand = new RelayCommand(_ => CancelCheckout());
-        ResetDemoCommand = new RelayCommand(_ => ResetDemo());
 
         Refresh();
     }
@@ -57,6 +56,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     /// <summary>Das Preisblatt wurde geöffnet.</summary>
     public event EventHandler? PaywallOpened;
+
+    /// <summary>Die Parodie-Paywall hat die nächste Ablehnungsstufe erreicht.</summary>
+    public event EventHandler? PaywallDismissalAdvanced;
 
     /// <summary>Der Kaufdialog wurde geöffnet.</summary>
     public event EventHandler? CheckoutOpened;
@@ -112,9 +114,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     /// <summary>Kauf abbrechen.</summary>
     public RelayCommand CancelPurchaseCommand { get; }
 
-    /// <summary>Demo zurücksetzen.</summary>
-    public RelayCommand ResetDemoCommand { get; }
-
     /// <summary>Der sichtbare Ausdruck.</summary>
     public string ExpressionText
     {
@@ -146,15 +145,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     /// <summary>Der zuletzt gewählte Tarif.</summary>
     public PaywallPlan SelectedPlan => _selectedPlan;
 
-    /// <summary>Der Text des Tarifchips in der Kopfleiste.</summary>
-    public string PlanChipText
-    {
-        get => _planChipText;
-        private set => SetField(ref _planChipText, value);
-    }
-
     /// <summary>Wahr, wenn die Demo freigeschaltet ist.</summary>
     public bool IsUnlocked => _session.Paywall.State.IsUnlocked;
+
+    /// <summary>Wahr, wenn die automatisch gezeigte Paywall danach erneut geöffnet werden darf.</summary>
+    public bool CanReopenPaywall => _paywallShownThisRun && !IsUnlocked;
 
     /// <summary>Barrierefreier Name der Ergebniszeile; maskiert gibt er den Wert nicht preis.</summary>
     public string ResultAutomationName => IsResultMasked ? "Ergebnis verdeckt" : "Ergebnis";
@@ -188,6 +183,42 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     /// <summary>Wahr, wenn ein Overlay die Tastatur abfängt.</summary>
     public bool IsOverlayOpen => IsPaywallVisible || IsCheckoutVisible;
 
+    /// <summary>Überschrift der aktuellen, absichtlich übertriebenen Ablehnungsstufe.</summary>
+    public string PaywallTitle => _paywallDismissalStep switch
+    {
+        1 => "Moment. Wirklich sicher?",
+        2 => "Wir fragen ein letztes Mal.*",
+        _ => "Dein Ergebnis ist fertig.",
+    };
+
+    /// <summary>Begleittext der aktuellen Ablehnungsstufe.</summary>
+    public string PaywallMessage => _paywallDismissalStep switch
+    {
+        1 => "Ohne Pro bleibt dieses Ergebnis leider emotional verschlossen.",
+        2 => "*Das war gelogen. Danach darfst du aber wirklich weiterrechnen.",
+        _ => "Aber offenbar gehört die Antwort jetzt unserem Premium-Team.",
+    };
+
+    /// <summary>Text des Ablehnen-Knopfs.</summary>
+    public string PaywallCloseText => _paywallDismissalStep switch
+    {
+        1 => "Ja. Wirklich ablehnen",
+        2 => "Letzte Chance ignorieren",
+        _ => "Nein danke",
+    };
+
+    /// <summary>Transparenter Hinweis darauf, wie oft die Parodie noch abgelehnt werden muss.</summary>
+    public string PaywallDismissalHint
+    {
+        get
+        {
+            var remaining = 3 - _paywallDismissalStep;
+            return remaining == 1
+                ? "Noch 1 Ablehnung bis zurück zum Rechner"
+                : $"Noch {remaining} Ablehnungen bis zurück zum Rechner";
+        }
+    }
+
     /// <summary>Die Zeilen des Rechenbands, neueste zuerst.</summary>
     public ObservableCollection<HistoryRow> History => _history;
 
@@ -196,13 +227,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     /// <summary>Tarifzeile im Kaufdialog.</summary>
     public string CheckoutPlanLine => _selectedPlan == PaywallPlan.OneTime
-        ? "Einmalkauf · 4,99 €"
-        : "Abo · 1,99 € pro Monat";
+        ? "Lebenslang rechnen · fiktive 499,99 €"
+        : "Ultra-Abo · fiktive 29,99 € pro Woche";
 
     /// <summary>Zweite Zusammenfassungszeile im Kaufdialog.</summary>
     public string CheckoutNoteLine => _selectedPlan == PaywallPlan.OneTime
-        ? "Einmalig bezahlt, dauerhaft freigeschaltet"
-        : "jederzeit kündbar";
+        ? "Einmal erfunden, dauerhaft freigeschaltet"
+        : "Jederzeit fiktiv kündbar";
 
     /// <summary>Verarbeitet eine Ziffer aus der Tastatur.</summary>
     public void TypeDigit(char digit)
@@ -264,6 +295,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         if (evaluated && _session.IsResultMasked && !_paywallShownThisRun)
         {
             _paywallShownThisRun = true;
+            RaisePropertyChanged(nameof(CanReopenPaywall));
             OpenPaywall();
         }
     }
@@ -347,6 +379,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
 
         IsCheckoutVisible = false;
+        _paywallDismissalStep = 0;
+        RaisePaywallCopyChanged();
         IsPaywallVisible = true;
         PaywallOpened?.Invoke(this, EventArgs.Empty);
     }
@@ -359,8 +393,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
+        if (_paywallDismissalStep < 2)
+        {
+            _paywallDismissalStep++;
+            RaisePaywallCopyChanged();
+            PaywallDismissalAdvanced?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
         IsCheckoutVisible = false;
         IsPaywallVisible = false;
+        _paywallDismissalStep = 0;
+        RaisePaywallCopyChanged();
         OverlaysClosed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -403,6 +447,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         _session.Unlock(_selectedPlan);
         IsCheckoutVisible = false;
         IsPaywallVisible = false;
+        _paywallDismissalStep = 0;
+        RaisePaywallCopyChanged();
         Refresh();
         OverlaysClosed?.Invoke(this, EventArgs.Empty);
     }
@@ -411,8 +457,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public void ResetDemo()
     {
         _session.ResetDemo();
+        _paywallShownThisRun = false;
+        RaisePropertyChanged(nameof(CanReopenPaywall));
         IsCheckoutVisible = false;
         IsPaywallVisible = false;
+        _paywallDismissalStep = 0;
+        RaisePaywallCopyChanged();
         Refresh();
         OverlaysClosed?.Invoke(this, EventArgs.Empty);
     }
@@ -480,26 +530,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         IsResultMasked = _session.IsResultMasked;
         RaisePropertyChanged(nameof(ResultAutomationName));
         DisplayResult = _session.DisplayResult;
-        PlanChipText = BuildPlanChipText();
         RaisePropertyChanged(nameof(IsUnlocked));
+        RaisePropertyChanged(nameof(CanReopenPaywall));
         RebuildHistory();
     }
 
-    private string BuildPlanChipText()
+    private void RaisePaywallCopyChanged()
     {
-        var state = _session.Paywall.State;
-        if (state.IsUnlocked)
-        {
-            return state.Plan switch
-            {
-                PaywallPlan.Subscription => "Abo aktiv (Demo)",
-                PaywallPlan.OneTime => "Einmalkauf (Demo)",
-                _ => "Freigeschaltet (Demo)",
-            };
-        }
-
-        var remaining = _session.Paywall.RemainingFreeEvaluations;
-        return $"Demo · {remaining} von {PaywallService.FreeEvaluations} frei";
+        RaisePropertyChanged(nameof(PaywallTitle));
+        RaisePropertyChanged(nameof(PaywallMessage));
+        RaisePropertyChanged(nameof(PaywallCloseText));
+        RaisePropertyChanged(nameof(PaywallDismissalHint));
     }
 
     private void RebuildHistory()

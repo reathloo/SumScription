@@ -17,10 +17,10 @@ namespace PayToCalc.App.Views;
 public partial class MainWindow : Window
 {
     private const int KeypadRows = 5;
-    private const int KeypadColumns = 5;
-    private const double KeyHeightCompact = 46d;
-    private const double KeyHeightRoomy = 52d;
-    private const double RoomyWindowHeight = 720d;
+    private const int KeypadColumns = 4;
+    private const double KeyHeightCompact = 60d;
+    private const double KeyHeightRoomy = 66d;
+    private const double RoomyWindowHeight = 760d;
 
     private readonly Control?[,] _keypad = new Control?[KeypadRows, KeypadColumns];
 
@@ -139,6 +139,7 @@ public partial class MainWindow : Window
             viewModel.Evaluated -= OnEvaluated;
             viewModel.ErrorAppeared -= OnErrorAppeared;
             viewModel.PaywallOpened -= OnPaywallOpened;
+            viewModel.PaywallDismissalAdvanced -= OnPaywallDismissalAdvanced;
             viewModel.CheckoutOpened -= OnCheckoutOpened;
             viewModel.CheckoutClosed -= OnCheckoutClosed;
             viewModel.OverlaysClosed -= OnOverlaysClosed;
@@ -157,6 +158,7 @@ public partial class MainWindow : Window
         viewModel.Evaluated += OnEvaluated;
         viewModel.ErrorAppeared += OnErrorAppeared;
         viewModel.PaywallOpened += OnPaywallOpened;
+        viewModel.PaywallDismissalAdvanced += OnPaywallDismissalAdvanced;
         viewModel.CheckoutOpened += OnCheckoutOpened;
         viewModel.CheckoutClosed += OnCheckoutClosed;
         viewModel.OverlaysClosed += OnOverlaysClosed;
@@ -343,6 +345,9 @@ public partial class MainWindow : Window
         });
     }
 
+    private void OnPaywallDismissalAdvanced(object? sender, EventArgs e) =>
+        Dispatcher.UIThread.Post(AnimatePaywallNag);
+
     private void OnCheckoutOpened(object? sender, EventArgs e) =>
         Dispatcher.UIThread.Post(() =>
         {
@@ -452,6 +457,34 @@ public partial class MainWindow : Window
         };
 
         _ = animation.RunAsync(control);
+    }
+
+    private void AnimatePaywallNag()
+    {
+        if (Motion.Reduced)
+        {
+            PaywallCloseButton.Focus();
+            return;
+        }
+
+        PaywallSheet.RenderTransform = new TranslateTransform();
+        var animation = new Animation
+        {
+            Duration = TimeSpan.FromMilliseconds(240),
+            Easing = new CubicEaseOut(),
+            FillMode = FillMode.None,
+            Children =
+            {
+                KeyFrame(0, 0, 1),
+                KeyFrame(0.18, -8, 1),
+                KeyFrame(0.42, 7, 1),
+                KeyFrame(0.68, -4, 1),
+                KeyFrame(1, 0, 1),
+            },
+        };
+
+        _ = animation.RunAsync(PaywallSheet);
+        PaywallCloseButton.Focus();
     }
 
     private static void Run(Control control, int milliseconds, double opacity, double offset)
