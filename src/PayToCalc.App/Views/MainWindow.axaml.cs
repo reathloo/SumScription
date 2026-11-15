@@ -106,11 +106,18 @@ public partial class MainWindow : Window
         AcButton.Focus();
     }
 
+    // Einzige Stelle, die Enter auswertet: der Tunnel-Handler läuft vor allen Knöpfen und
+    // markiert die Geste, damit weder ein fokussierter Knopf noch OnKeyDown sie erneut auslöst.
     private void OnPreviewKeyDown(object? sender, KeyEventArgs e)
     {
         ArgumentNullException.ThrowIfNull(e);
 
         if (_viewModel is not { } viewModel || viewModel.IsOverlayOpen)
+        {
+            return;
+        }
+
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta))
         {
             return;
         }
@@ -195,15 +202,59 @@ public partial class MainWindow : Window
 
     private static bool HandleCalculatorKey(MainWindowViewModel viewModel, KeyEventArgs e)
     {
-        switch (e.Key)
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta))
         {
-            case >= Key.D0 and <= Key.D9:
-                viewModel.TypeDigit((char)('0' + (e.Key - Key.D0)));
+            return false;
+        }
+
+        // Layoutabhängige Zeichen zuerst: auf deutscher Tastatur ist Shift+0 „=“, Shift+7 „/“,
+        // Shift+Plus „*“ — physische Key-Werte wären hier falsch.
+        return HandleSymbol(viewModel, e.KeySymbol) || HandlePhysicalKey(viewModel, e.Key);
+    }
+
+    private static bool HandleSymbol(MainWindowViewModel viewModel, string? symbol)
+    {
+        if (symbol is not { Length: 1 })
+        {
+            return false;
+        }
+
+        var character = symbol[0];
+        if (char.IsAsciiDigit(character))
+        {
+            viewModel.TypeDigit(character);
+            return true;
+        }
+
+        switch (character)
+        {
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+                viewModel.TypeOperator(character);
                 return true;
+            case ',':
+            case '.':
+                viewModel.TypeSeparator();
+                return true;
+            case '=':
+                viewModel.Evaluate();
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    // Nur Aktionen ohne layoutabhängiges Zeichen: Ziffernblock, Escape, Rücktaste.
+    private static bool HandlePhysicalKey(MainWindowViewModel viewModel, Key key)
+    {
+        switch (key)
+        {
             case >= Key.NumPad0 and <= Key.NumPad9:
-                viewModel.TypeDigit((char)('0' + (e.Key - Key.NumPad0)));
+                viewModel.TypeDigit((char)('0' + (key - Key.NumPad0)));
                 return true;
-            case Key.OemComma or Key.OemPeriod or Key.Decimal:
+            case Key.Decimal:
                 viewModel.TypeSeparator();
                 return true;
             case Key.Add:
@@ -217,26 +268,6 @@ public partial class MainWindow : Window
                 return true;
             case Key.Divide:
                 viewModel.TypeOperator('/');
-                return true;
-            case Key.OemPlus:
-                if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-                {
-                    viewModel.TypeOperator('+');
-                }
-                else
-                {
-                    viewModel.Evaluate();
-                }
-
-                return true;
-            case Key.OemMinus:
-                viewModel.TypeOperator('-');
-                return true;
-            case Key.OemQuestion:
-                viewModel.TypeOperator('/');
-                return true;
-            case Key.Enter or Key.Return:
-                viewModel.Evaluate();
                 return true;
             case Key.Escape:
                 viewModel.ClearAll();
