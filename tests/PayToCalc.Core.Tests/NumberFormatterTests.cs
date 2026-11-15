@@ -33,6 +33,28 @@ public sealed class NumberFormatterTests
     }
 
     [Fact]
+    public void Format_RoundsIntegersToFifteenSignificantDigits()
+    {
+        Assert.Equal("1234567890123460", NumberFormatter.Format(1234567890123456m));
+    }
+
+    [Fact]
+    public void Format_HandlesDecimalMaximumWithoutOverflow()
+    {
+        var text = NumberFormatter.Format(decimal.MaxValue);
+
+        Assert.Equal("79228162514264300000000000000", text);
+    }
+
+    [Fact]
+    public void Format_HandlesDecimalMinimumWithoutOverflow()
+    {
+        var text = NumberFormatter.Format(decimal.MinValue);
+
+        Assert.Equal("-79228162514264300000000000000", text);
+    }
+
+    [Fact]
     public void Format_KeepsLargeValuesWithoutExponent()
     {
         Assert.Equal("123456789012345000", NumberFormatter.Format(123456789012345000m));

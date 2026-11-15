@@ -40,12 +40,15 @@ public static class NumberFormatter
             return 0m;
         }
 
-        var absolute = Math.Abs(value);
-        var integerPart = Math.Truncate(absolute);
-        var integerDigits = integerPart == 0m ? 0 : integerPart.ToString("F0", InvariantCulture).Length;
+        var integerDigits = CountIntegerDigits(decimal.Truncate(value));
+
+        if (integerDigits > digits)
+        {
+            return RoundIntegerDigits(value, integerDigits - digits);
+        }
 
         int decimals;
-        if (integerDigits >= digits)
+        if (integerDigits == digits)
         {
             decimals = 0;
         }
@@ -54,7 +57,7 @@ public static class NumberFormatter
             var leadingZeros = 0;
             if (integerDigits == 0)
             {
-                var plain = absolute.ToString("F28", InvariantCulture);
+                var plain = UnsignedText(value, "F28");
                 var fractionStart = plain.IndexOf('.', StringComparison.Ordinal) + 1;
                 while (fractionStart + leadingZeros < plain.Length && plain[fractionStart + leadingZeros] == '0')
                 {
@@ -66,6 +69,54 @@ public static class NumberFormatter
         }
 
         return decimal.Round(value, decimals, MidpointRounding.AwayFromZero);
+    }
+
+    private static int CountIntegerDigits(decimal value)
+    {
+        if (value == 0m)
+        {
+            return 0;
+        }
+
+        var text = UnsignedText(value, "F0");
+        return text.Length;
+    }
+
+    private static string UnsignedText(decimal value, string format)
+    {
+        var text = value.ToString(format, InvariantCulture);
+        return text.StartsWith('-') ? text[1..] : text;
+    }
+
+    private static decimal RoundIntegerDigits(decimal value, int dropDigits)
+    {
+        var factor = PowerOfTen(dropDigits);
+        var scaled = decimal.Round(value / factor, 0, MidpointRounding.AwayFromZero);
+
+        if (scaled == 0m)
+        {
+            return 0m;
+        }
+
+        try
+        {
+            return scaled * factor;
+        }
+        catch (OverflowException)
+        {
+            return (scaled - Math.Sign(scaled)) * factor;
+        }
+    }
+
+    private static decimal PowerOfTen(int exponent)
+    {
+        var factor = 1m;
+        for (var i = 0; i < exponent; i++)
+        {
+            factor *= 10m;
+        }
+
+        return factor;
     }
 
     /// <summary>Parst einen Eintrag der Anzeige (Komma oder Punkt) oder liefert 0.</summary>

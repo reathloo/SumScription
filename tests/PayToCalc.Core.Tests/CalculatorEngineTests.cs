@@ -26,6 +26,18 @@ public sealed class CalculatorEngineTests
 
         Assert.True(engine.Evaluate());
         Assert.Equal("3", engine.DisplayResult);
+        Assert.Equal("1 + 2", engine.ExpressionText);
+    }
+
+    [Fact]
+    public void LargeIntegerResult_IsRoundedToFifteenDigits()
+    {
+        var engine = new CalculatorEngine();
+
+        Input.Enter(engine, "123456789012345*11");
+
+        Assert.True(engine.Evaluate());
+        Assert.Equal("1358024679135800", engine.DisplayResult);
     }
 
     [Theory]

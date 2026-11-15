@@ -39,21 +39,7 @@ public sealed class CalculatorEngine
                 return string.Empty;
             }
 
-            var builder = new StringBuilder();
-            for (var i = 0; i < _operands.Count && i < _operators.Count; i++)
-            {
-                builder.Append(NumberFormatter.Format(_operands[i]));
-                builder.Append(' ');
-                builder.Append(_operators[i].ToSymbol());
-                builder.Append(' ');
-            }
-
-            if (!_entryBlank)
-            {
-                builder.Append(_entry);
-            }
-
-            return builder.ToString().TrimEnd();
+            return RenderExpression(_operands, _operators, _entryBlank ? null : _entry);
         }
     }
 
@@ -269,7 +255,7 @@ public sealed class CalculatorEngine
             operands.Add(NumberFormatter.ParseEntry(_entry));
         }
 
-        var expression = ExpressionText;
+        var expression = RenderExpression(operands, operators, null);
 
         if (!ExpressionEvaluator.TryEvaluate(operands, operators, out var value, out var error))
         {
@@ -287,6 +273,31 @@ public sealed class CalculatorEngine
         _entry = NumberFormatter.Format(value);
         _entryBlank = false;
         return true;
+    }
+
+    private static string RenderExpression(
+        IReadOnlyList<decimal> operands,
+        IReadOnlyList<CalculatorOperator> operators,
+        string? entry)
+    {
+        var builder = new StringBuilder();
+        for (var i = 0; i < operands.Count; i++)
+        {
+            builder.Append(NumberFormatter.Format(operands[i]));
+            if (i < operators.Count)
+            {
+                builder.Append(' ');
+                builder.Append(operators[i].ToSymbol());
+                builder.Append(' ');
+            }
+        }
+
+        if (entry is not null)
+        {
+            builder.Append(entry);
+        }
+
+        return builder.ToString().TrimEnd();
     }
 
     private void StartNewExpression()
