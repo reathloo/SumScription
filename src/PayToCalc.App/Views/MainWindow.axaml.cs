@@ -366,15 +366,16 @@ public partial class MainWindow : Window
     private void OnOverlaysClosed(object? sender, EventArgs e) =>
         Dispatcher.UIThread.Post(() =>
         {
-            if (_previousFocus is { } previous)
+            var previous = _previousFocus;
+            _previousFocus = null;
+            if (previous is Control { IsEffectivelyVisible: true, IsEffectivelyEnabled: true })
             {
                 previous.Focus();
-                _previousFocus = null;
+                return;
             }
-            else
-            {
-                UnlockButton.Focus();
-            }
+
+            // Nach dem Kauf ist „Ergebnis freischalten" ausgeblendet — dann zurück auf AC.
+            (UnlockButton.IsEffectivelyVisible ? UnlockButton : AcButton).Focus();
         });
 
     private void AnimateResult()

@@ -207,10 +207,11 @@
       </Grid>
 
       <!-- Fußleiste -->
-      <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="8" Margin="12,6">
+      <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="12,6">
         <Button Name="ResetButton" Classes="bar" Content="Demo zurücksetzen" TabIndex="22"
                 AutomationProperties.Name="Demo zurücksetzen" Command="{Binding ResetDemoCommand}" />
         <Button Name="UnlockButton" Grid.Column="1" Classes="bar primary" Content="Ergebnis freischalten" TabIndex="23"
+                IsVisible="{Binding !IsUnlocked}"
                 AutomationProperties.Name="Ergebnis freischalten" Command="{Binding OpenPaywallCommand}" />
       </Grid>
     </Grid>

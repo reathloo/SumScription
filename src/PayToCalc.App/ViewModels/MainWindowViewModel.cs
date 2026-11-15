@@ -328,6 +328,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     /// <summary>Öffnet das Preisblatt.</summary>
     public void OpenPaywall()
     {
+        if (IsUnlocked)
+        {
+            return;
+        }
+
         if (IsPaywallVisible)
         {
             if (IsCheckoutVisible)
