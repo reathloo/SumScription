@@ -36,7 +36,7 @@ public sealed class CalculatorSession
     public string ExpressionText => _engine.ExpressionText;
 
     /// <summary>Der sichtbare Eintrag bzw. das Ergebnis.</summary>
-    public string ResultText => _engine.ResultText;
+    public string DisplayResult => _engine.DisplayResult;
 
     /// <summary>Wahr, wenn ein Fehler angezeigt wird.</summary>
     public bool HasError => _engine.HasError;
@@ -117,7 +117,7 @@ public sealed class CalculatorSession
         }
 
         IsResultMasked = !Paywall.RegisterSuccessfulEvaluation();
-        AddHistory(new HistoryEntry(_engine.ExpressionText, _engine.ResultText, IsResultMasked));
+        AddHistory(new HistoryEntry(_engine.ExpressionText, _engine.DisplayResult, IsResultMasked));
         return true;
     }
 

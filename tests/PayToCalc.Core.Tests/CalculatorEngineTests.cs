@@ -13,7 +13,7 @@ public sealed class CalculatorEngineTests
 
         Assert.Equal("1 + 2 × 3", engine.ExpressionText);
         Assert.True(engine.Evaluate());
-        Assert.Equal("7", engine.ResultText);
+        Assert.Equal("7", engine.DisplayResult);
         Assert.Equal("1 + 2 × 3", engine.ExpressionText);
     }
 
@@ -25,7 +25,7 @@ public sealed class CalculatorEngineTests
         Input.Enter(engine, "1+2+");
 
         Assert.True(engine.Evaluate());
-        Assert.Equal("3", engine.ResultText);
+        Assert.Equal("3", engine.DisplayResult);
     }
 
     [Theory]
@@ -40,7 +40,7 @@ public sealed class CalculatorEngineTests
         Input.Enter(engine, input);
 
         Assert.True(engine.Evaluate());
-        Assert.Equal(expected, engine.ResultText);
+        Assert.Equal(expected, engine.DisplayResult);
     }
 
     [Fact]
@@ -52,13 +52,13 @@ public sealed class CalculatorEngineTests
 
         Assert.False(engine.Evaluate());
         Assert.True(engine.HasError);
-        Assert.Equal("Division durch null", engine.ResultText);
+        Assert.Equal("Division durch null", engine.DisplayResult);
         Assert.Equal("1 ÷ 0", engine.ExpressionText);
 
         engine.InputDigit('5');
 
         Assert.False(engine.HasError);
-        Assert.Equal("5", engine.ResultText);
+        Assert.Equal("5", engine.DisplayResult);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class CalculatorEngineTests
         engine.ClearAll();
 
         Assert.False(engine.HasError);
-        Assert.Equal("0", engine.ResultText);
+        Assert.Equal("0", engine.DisplayResult);
         Assert.Equal(string.Empty, engine.ExpressionText);
     }
 
@@ -84,7 +84,7 @@ public sealed class CalculatorEngineTests
 
         Assert.False(engine.Evaluate());
         Assert.True(engine.HasError);
-        Assert.Equal("Zahl zu groß", engine.ResultText);
+        Assert.Equal("Zahl zu groß", engine.DisplayResult);
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public sealed class CalculatorEngineTests
         engine.InputOperator('+');
 
         Assert.True(engine.HasError);
-        Assert.Equal("Division durch null", engine.ResultText);
+        Assert.Equal("Division durch null", engine.DisplayResult);
     }
 
     [Fact]
@@ -107,10 +107,10 @@ public sealed class CalculatorEngineTests
 
         Input.Enter(engine, "1234567890123456789");
 
-        Assert.Equal("123456789012345", engine.ResultText);
+        Assert.Equal("123456789012345", engine.DisplayResult);
 
         Assert.True(engine.Evaluate());
-        Assert.Equal("123456789012345", engine.ResultText);
+        Assert.Equal("123456789012345", engine.DisplayResult);
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public sealed class CalculatorEngineTests
         Input.Enter(engine, "1/3");
 
         Assert.True(engine.Evaluate());
-        Assert.Equal("0,333333333333333", engine.ResultText);
+        Assert.Equal("0,333333333333333", engine.DisplayResult);
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public sealed class CalculatorEngineTests
         Input.Enter(engine, "50");
         engine.Percent();
 
-        Assert.Equal("0,5", engine.ResultText);
+        Assert.Equal("0,5", engine.DisplayResult);
     }
 
     [Fact]
@@ -143,11 +143,11 @@ public sealed class CalculatorEngineTests
         Input.Enter(engine, "42");
         engine.ToggleSign();
 
-        Assert.Equal("-42", engine.ResultText);
+        Assert.Equal("-42", engine.DisplayResult);
 
         engine.ToggleSign();
 
-        Assert.Equal("42", engine.ResultText);
+        Assert.Equal("42", engine.DisplayResult);
     }
 
     [Fact]
@@ -158,16 +158,16 @@ public sealed class CalculatorEngineTests
         Input.Enter(engine, "123");
         engine.Backspace();
 
-        Assert.Equal("12", engine.ResultText);
+        Assert.Equal("12", engine.DisplayResult);
 
         engine.Backspace();
         engine.Backspace();
 
-        Assert.Equal("0", engine.ResultText);
+        Assert.Equal("0", engine.DisplayResult);
 
         engine.Backspace();
 
-        Assert.Equal("0", engine.ResultText);
+        Assert.Equal("0", engine.DisplayResult);
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public sealed class CalculatorEngineTests
         engine.ClearEntry();
 
         Assert.Equal("12 + 0", engine.ExpressionText);
-        Assert.Equal("0", engine.ResultText);
+        Assert.Equal("0", engine.DisplayResult);
     }
 
     [Fact]
@@ -191,7 +191,7 @@ public sealed class CalculatorEngineTests
         engine.ClearAll();
 
         Assert.Equal(string.Empty, engine.ExpressionText);
-        Assert.Equal("0", engine.ResultText);
+        Assert.Equal("0", engine.DisplayResult);
     }
 
     [Theory]
@@ -205,7 +205,7 @@ public sealed class CalculatorEngineTests
         Input.Enter(engine, input);
 
         Assert.True(engine.Evaluate());
-        Assert.Equal(expected, engine.ResultText);
+        Assert.Equal(expected, engine.DisplayResult);
     }
 
     [Fact]
@@ -215,7 +215,7 @@ public sealed class CalculatorEngineTests
 
         Input.Enter(engine, "1,,.5");
 
-        Assert.Equal("1,5", engine.ResultText);
+        Assert.Equal("1,5", engine.DisplayResult);
     }
 
     [Fact]
@@ -228,7 +228,7 @@ public sealed class CalculatorEngineTests
         engine.InputDigit('9');
 
         Assert.Equal("9", engine.ExpressionText);
-        Assert.Equal("9", engine.ResultText);
+        Assert.Equal("9", engine.DisplayResult);
     }
 
     [Fact]
@@ -244,7 +244,7 @@ public sealed class CalculatorEngineTests
         Assert.Equal("3 × 4", engine.ExpressionText);
 
         Assert.True(engine.Evaluate());
-        Assert.Equal("12", engine.ResultText);
+        Assert.Equal("12", engine.DisplayResult);
     }
 
     [Fact]
@@ -275,6 +275,6 @@ public sealed class CalculatorEngineTests
         Input.Enter(engine, "2-5");
 
         Assert.True(engine.Evaluate());
-        Assert.Equal("-3", engine.ResultText);
+        Assert.Equal("-3", engine.DisplayResult);
     }
 }

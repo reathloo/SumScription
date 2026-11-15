@@ -20,13 +20,13 @@ public sealed class CalculatorSessionTests
         {
             Evaluate(session, "1+1");
             Assert.False(session.IsResultMasked, $"Auswertung {i + 1} muss sichtbar sein.");
-            Assert.Equal("2", session.ResultText);
+            Assert.Equal("2", session.DisplayResult);
         }
 
         Evaluate(session, "2+2");
 
         Assert.True(session.IsResultMasked);
-        Assert.Equal("4", session.ResultText);
+        Assert.Equal("4", session.DisplayResult);
         Assert.Equal("2 + 2", session.ExpressionText);
     }
 
@@ -42,7 +42,7 @@ public sealed class CalculatorSessionTests
         Assert.False(session.Evaluate());
 
         Assert.Equal(0, store.State.SuccessfulEvaluations);
-        Assert.Equal("Division durch null", session.ResultText);
+        Assert.Equal("Division durch null", session.DisplayResult);
         Assert.Empty(session.History);
     }
 
@@ -115,7 +115,7 @@ public sealed class CalculatorSessionTests
 
         Assert.Single(session.History);
         Assert.Equal("6 + 6", session.History[0].Expression);
-        Assert.Equal("12", session.History[0].Result);
+        Assert.Equal("12", session.History[0].Value);
     }
 
     private static void Evaluate(CalculatorSession session, string input)

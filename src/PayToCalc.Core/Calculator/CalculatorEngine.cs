@@ -20,7 +20,7 @@ public sealed class CalculatorEngine
     private enum Phase
     {
         Typing,
-        Result,
+        ShowingResult,
         Error,
     }
 
@@ -29,7 +29,7 @@ public sealed class CalculatorEngine
     {
         get
         {
-            if (_phase == Phase.Result)
+            if (_phase == Phase.ShowingResult)
             {
                 return _evaluatedExpression;
             }
@@ -58,9 +58,9 @@ public sealed class CalculatorEngine
     }
 
     /// <summary>Der sichtbare Eintrag bzw. das Ergebnis der letzten Auswertung.</summary>
-    public string ResultText => _phase switch
+    public string DisplayResult => _phase switch
     {
-        Phase.Result => NumberFormatter.Format(_result),
+        Phase.ShowingResult => NumberFormatter.Format(_result),
         Phase.Error => _error.ToDisplayText(),
         _ => _entry,
     };
@@ -72,13 +72,13 @@ public sealed class CalculatorEngine
     public bool HasError => _phase == Phase.Error;
 
     /// <summary>Wahr, wenn die Ergebniszeile das letzte Ergebnis zeigt.</summary>
-    public bool IsShowingResult => _phase == Phase.Result;
+    public bool IsShowingResult => _phase == Phase.ShowingResult;
 
     /// <summary>Wahr, wenn der Eintrag leer ist (direkt nach einem Operator).</summary>
     public bool IsEntryBlank => _entryBlank;
 
     /// <summary>Der aktuelle Eintrag als Zahl.</summary>
-    public decimal EntryValue => _phase == Phase.Result ? _result : NumberFormatter.ParseEntry(_entry);
+    public decimal EntryValue => _phase == Phase.ShowingResult ? _result : NumberFormatter.ParseEntry(_entry);
 
     /// <summary>Verarbeitet eine Ziffer 0–9.</summary>
     public void InputDigit(char digit)
@@ -104,7 +104,7 @@ public sealed class CalculatorEngine
             return;
         }
 
-        if (_phase == Phase.Result)
+        if (_phase == Phase.ShowingResult)
         {
             StartNewExpression();
         }
@@ -135,7 +135,7 @@ public sealed class CalculatorEngine
             return false;
         }
 
-        if (_phase == Phase.Result)
+        if (_phase == Phase.ShowingResult)
         {
             ContinueWithResult();
         }
@@ -161,7 +161,7 @@ public sealed class CalculatorEngine
             return;
         }
 
-        if (_phase == Phase.Result)
+        if (_phase == Phase.ShowingResult)
         {
             var value = _result;
             StartNewExpression();
@@ -189,7 +189,7 @@ public sealed class CalculatorEngine
         }
 
         var value = EntryValue;
-        if (_phase == Phase.Result)
+        if (_phase == Phase.ShowingResult)
         {
             StartNewExpression();
         }
@@ -228,7 +228,7 @@ public sealed class CalculatorEngine
             return;
         }
 
-        if (_phase == Phase.Result)
+        if (_phase == Phase.ShowingResult)
         {
             StartNewExpression();
             return;
@@ -279,7 +279,7 @@ public sealed class CalculatorEngine
         }
 
         _result = value;
-        _phase = Phase.Result;
+        _phase = Phase.ShowingResult;
         _evaluatedExpression = expression;
         _operands.Clear();
         _operands.Add(value);
