@@ -55,6 +55,8 @@ public sealed class JsonFilePaywallStateStore : IPaywallStateStore
     /// <inheritdoc />
     public void Save(PaywallState state)
     {
+        var tempPath = FilePath + ".tmp";
+
         try
         {
             var directory = Path.GetDirectoryName(FilePath);
@@ -63,13 +65,29 @@ public sealed class JsonFilePaywallStateStore : IPaywallStateStore
                 Directory.CreateDirectory(directory);
             }
 
-            var tempPath = FilePath + ".tmp";
             File.WriteAllText(tempPath, JsonSerializer.Serialize(state, SerializerOptions));
             File.Move(tempPath, FilePath, overwrite: true);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or NotSupportedException)
         {
             // Ein fehlgeschlagener Schreibvorgang darf die Demo nicht blockieren.
+            DeleteTempFile(tempPath);
+        }
+    }
+
+    // Räumt eine liegen gebliebene Temp-Datei auf; auch dieser Schritt darf nie werfen.
+    private static void DeleteTempFile(string tempPath)
+    {
+        try
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            // Aufräumen ist best effort.
         }
     }
 }

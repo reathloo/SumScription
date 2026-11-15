@@ -223,6 +223,37 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
     }
 
     [Fact]
+    public void Save_WhenTargetPathIsDirectory_RemovesTempFileAndKeepsNothingBehind()
+    {
+        Directory.CreateDirectory(_path);
+        var store = new JsonFilePaywallStateStore(_path);
+
+        var exception = Record.Exception(() => store.Save(new PaywallState(1, false, PaywallPlan.None)));
+
+        Assert.Null(exception);
+        Assert.False(File.Exists(_path + ".tmp"));
+        Assert.Empty(Directory.GetFiles(_directory, "*.tmp"));
+        Assert.Equal(PaywallState.Default, store.Load());
+    }
+
+    [Fact]
+    public void Save_WhenTargetPathIsDirectory_KeepsExistingState()
+    {
+        var store = new JsonFilePaywallStateStore(_path);
+        store.Save(new PaywallState(4, false, PaywallPlan.None));
+
+        // Ein Verzeichnis an der Zielstelle lässt das Verschieben scheitern.
+        Directory.Move(_path, Path.Combine(_directory, "state.json.bak"));
+        Directory.CreateDirectory(_path);
+
+        var exception = Record.Exception(() => store.Save(new PaywallState(9, true, PaywallPlan.Subscription)));
+
+        Assert.Null(exception);
+        Assert.Empty(Directory.GetFiles(_directory, "*.tmp"));
+        Assert.True(File.Exists(Path.Combine(_directory, "state.json.bak")));
+    }
+
+    [Fact]
     public void Save_WhenTempPathIsBlocked_KeepsPreviousStateIntact()
     {
         var store = new JsonFilePaywallStateStore(_path);
