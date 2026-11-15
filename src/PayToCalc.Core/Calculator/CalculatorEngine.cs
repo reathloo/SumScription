@@ -215,7 +215,10 @@ public sealed class CalculatorEngine
         }
     }
 
-    /// <summary>Setzt den Eintrag auf 0, der Ausdruck bleibt stehen.</summary>
+    /// <summary>
+    /// Setzt den Eintrag auf 0, der Ausdruck bleibt stehen. Nach einem Ergebnis beginnt
+    /// stattdessen ein neuer Eintrag, weil das Ergebnis den Ausdruck abgeschlossen hat.
+    /// </summary>
     public void ClearEntry()
     {
         if (_phase == Phase.Error)
