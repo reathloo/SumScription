@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\PayToCalc.App\PayToCalc.App.csproj" />
     <ProjectReference Include="..\..\src\PayToCalc.Core\PayToCalc.Core.csproj" />
   </ItemGroup>
 
