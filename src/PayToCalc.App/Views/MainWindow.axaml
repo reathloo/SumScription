@@ -1,0 +1,307 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:PayToCalc.App.Controls"
+        xmlns:vm="using:PayToCalc.App.ViewModels"
+        x:Class="PayToCalc.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="payToCalc"
+        Width="360"
+        Height="560"
+        MinWidth="360"
+        MinHeight="560"
+        Background="{DynamicResource ChassisBrush}"
+        FontFamily="{StaticResource SansFont}"
+        WindowStartupLocation="CenterScreen">
+
+  <Panel>
+    <Grid RowDefinitions="36,*,Auto,44">
+
+      <!-- Kopfleiste -->
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="12,0">
+        <TextBlock Classes="meta"
+                   Text="payToCalc"
+                   FontWeight="SemiBold"
+                   LetterSpacing="0.4"
+                   VerticalAlignment="Center" />
+        <Border Grid.Column="1"
+                Background="{DynamicResource ChipBrush}"
+                BorderBrush="{DynamicResource ChipEdgeBrush}"
+                BorderThickness="1"
+                CornerRadius="3"
+                Padding="8,2"
+                VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Ellipse Name="PlanLed"
+                     Classes.led-on="{Binding IsUnlocked}"
+                     Width="6"
+                     Height="6"
+                     Fill="{DynamicResource TextSecondaryBrush}"
+                     VerticalAlignment="Center" />
+            <TextBlock Classes="meta secondary"
+                       Text="{Binding PlanChipText}"
+                       VerticalAlignment="Center" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <!-- Papierband -->
+      <controls:TapePanel Grid.Row="1"
+                          PaperBrush="{DynamicResource PaperBrush}"
+                          EdgeBrush="{DynamicResource PaperEdgeBrush}"
+                          HoleBrush="{DynamicResource ChassisBrush}">
+        <Grid RowDefinitions="92,*">
+
+          <!-- Live-Zone -->
+          <Grid Grid.Row="0" Margin="24,10,24,10">
+            <controls:CrosshairOverlay GuideBrush="{DynamicResource PaperInkSoftBrush}"
+                                       IsHitTestVisible="False" />
+            <Grid RowDefinitions="Auto,*">
+              <TextBlock Classes="expression paper-ink-soft"
+                         Text="{Binding ExpressionText}"
+                         VerticalAlignment="Top" />
+              <Grid Grid.Row="1">
+                <TextBlock Name="ResultLine"
+                           Classes="result paper-ink"
+                           Classes.masked="{Binding IsResultMasked}"
+                           IsVisible="{Binding !HasError}"
+                           Text="{Binding DisplayResult}"
+                           VerticalAlignment="Bottom">
+                  <TextBlock.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
+                    </Transitions>
+                  </TextBlock.Transitions>
+                </TextBlock>
+                <TextBlock Name="ErrorLine"
+                           Classes="error"
+                           Text="{Binding DisplayResult}"
+                           IsVisible="{Binding HasError}"
+                           VerticalAlignment="Bottom">
+                  <TextBlock.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.14" />
+                      <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" />
+                    </Transitions>
+                  </TextBlock.Transitions>
+                </TextBlock>
+                <Border Name="LockChip"
+                        IsVisible="{Binding IsResultMasked}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Width="36"
+                        Height="40"
+                        Background="{DynamicResource PaperBrush}"
+                        BorderBrush="{DynamicResource BrassBrush}"
+                        BorderThickness="1"
+                        CornerRadius="2">
+                  <Panel>
+                    <Path Data="M4,7 V5 A3,3 0 0 1 10,5 V7"
+                          Stroke="{DynamicResource BrassBrush}"
+                          StrokeThickness="2"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center" />
+                    <Path Data="M2,6 H12 V13.5 H2 Z"
+                          Fill="{DynamicResource BrassBrush}"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center" />
+                  </Panel>
+                </Border>
+              </Grid>
+            </Grid>
+          </Grid>
+
+          <!-- Journal -->
+          <ScrollViewer Grid.Row="1"
+                        MinHeight="108"
+                        MaxHeight="360"
+                        VerticalAlignment="Top"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Disabled"
+                        Padding="0,0,0,8">
+            <Panel>
+              <TextBlock Classes="history paper-ink-soft"
+                         Margin="24,0"
+                         Text="Noch keine Auswertungen"
+                         IsVisible="{Binding IsHistoryEmpty}" />
+              <ItemsControl ItemsSource="{Binding History}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:HistoryRow">
+                    <Grid ColumnDefinitions="*,Auto"
+                          Margin="24,0"
+                          Opacity="{Binding Opacity}">
+                      <TextBlock Classes="history"
+                                 Text="{Binding Expression}"
+                                 AutomationProperties.Name="{Binding AutomationName}" />
+                      <TextBlock Grid.Column="1"
+                                 Classes="history-result"
+                                 Margin="12,0,0,0"
+                                 Text="{Binding ResultText}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Panel>
+          </ScrollViewer>
+        </Grid>
+      </controls:TapePanel>
+
+      <!-- Tastenfeld -->
+      <Grid Name="Keypad"
+            Grid.Row="2"
+            Margin="12,4"
+            RowDefinitions="46,46,46,46,46"
+            ColumnDefinitions="*,*,*,*,*"
+            RowSpacing="4"
+            ColumnSpacing="4">
+
+        <Button Name="AcButton" Grid.Row="0" Grid.Column="0" Classes="function" Content="AC" TabIndex="1"
+                AutomationProperties.Name="Alles löschen" Command="{Binding ClearAllCommand}" />
+        <Button Grid.Row="0" Grid.Column="1" Classes="function" Content="C" TabIndex="2"
+                AutomationProperties.Name="Eintrag löschen" Command="{Binding ClearEntryCommand}" />
+        <Button Grid.Row="0" Grid.Column="2" Classes="function" Content="⌫" TabIndex="3"
+                AutomationProperties.Name="Rücktaste" Command="{Binding BackspaceCommand}" />
+        <Button Grid.Row="0" Grid.Column="3" Classes="function" Content="%" TabIndex="4"
+                AutomationProperties.Name="Prozent" Command="{Binding PercentCommand}" />
+        <Button Grid.Row="0" Grid.Column="4" Classes="function" Content="÷" TabIndex="5"
+                AutomationProperties.Name="Geteilt" Command="{Binding OperatorCommand}" CommandParameter="/" />
+
+        <Button Grid.Row="1" Grid.Column="0" Classes="digit" Content="7" TabIndex="6"
+                AutomationProperties.Name="Sieben" Command="{Binding DigitCommand}" CommandParameter="7" />
+        <Button Grid.Row="1" Grid.Column="1" Classes="digit" Content="8" TabIndex="7"
+                AutomationProperties.Name="Acht" Command="{Binding DigitCommand}" CommandParameter="8" />
+        <Button Grid.Row="1" Grid.Column="2" Classes="digit" Content="9" TabIndex="8"
+                AutomationProperties.Name="Neun" Command="{Binding DigitCommand}" CommandParameter="9" />
+        <Button Grid.Row="1" Grid.Column="3" Classes="function" Content="±" TabIndex="9"
+                AutomationProperties.Name="Vorzeichen wechseln" Command="{Binding ToggleSignCommand}" />
+        <Button Grid.Row="1" Grid.Column="4" Classes="function" Content="×" TabIndex="10"
+                AutomationProperties.Name="Mal" Command="{Binding OperatorCommand}" CommandParameter="*" />
+
+        <Button Grid.Row="2" Grid.Column="0" Classes="digit" Content="4" TabIndex="11"
+                AutomationProperties.Name="Vier" Command="{Binding DigitCommand}" CommandParameter="4" />
+        <Button Grid.Row="2" Grid.Column="1" Classes="digit" Content="5" TabIndex="12"
+                AutomationProperties.Name="Fünf" Command="{Binding DigitCommand}" CommandParameter="5" />
+        <Button Grid.Row="2" Grid.Column="2" Classes="digit" Content="6" TabIndex="13"
+                AutomationProperties.Name="Sechs" Command="{Binding DigitCommand}" CommandParameter="6" />
+        <Button Grid.Row="2" Grid.Column="3" Classes="function" Content="+" TabIndex="14"
+                AutomationProperties.Name="Plus" Command="{Binding OperatorCommand}" CommandParameter="+" />
+        <Button Grid.Row="2" Grid.Column="4" Classes="function" Content="−" TabIndex="15"
+                AutomationProperties.Name="Minus" Command="{Binding OperatorCommand}" CommandParameter="-" />
+
+        <Button Grid.Row="3" Grid.Column="0" Classes="digit" Content="1" TabIndex="16"
+                AutomationProperties.Name="Eins" Command="{Binding DigitCommand}" CommandParameter="1" />
+        <Button Grid.Row="3" Grid.Column="1" Classes="digit" Content="2" TabIndex="17"
+                AutomationProperties.Name="Zwei" Command="{Binding DigitCommand}" CommandParameter="2" />
+        <Button Grid.Row="3" Grid.Column="2" Classes="digit" Content="3" TabIndex="18"
+                AutomationProperties.Name="Drei" Command="{Binding DigitCommand}" CommandParameter="3" />
+        <Button Grid.Row="3" Grid.Column="3" Grid.RowSpan="2" Grid.ColumnSpan="2"
+                Classes="equals" Content="=" TabIndex="19"
+                AutomationProperties.Name="Ergebnis" Command="{Binding EqualsCommand}" />
+
+        <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Classes="digit" Content="0" TabIndex="20"
+                AutomationProperties.Name="Null" Command="{Binding DigitCommand}" CommandParameter="0" />
+        <Button Grid.Row="4" Grid.Column="2" Classes="digit" Content="," TabIndex="21"
+                AutomationProperties.Name="Dezimaltrennzeichen" Command="{Binding SeparatorCommand}" />
+      </Grid>
+
+      <!-- Fußleiste -->
+      <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="8" Margin="12,6">
+        <Button Name="ResetButton" Classes="bar" Content="Demo zurücksetzen" TabIndex="22"
+                AutomationProperties.Name="Demo zurücksetzen" Command="{Binding ResetDemoCommand}" />
+        <Button Name="UnlockButton" Grid.Column="1" Classes="bar primary" Content="Ergebnis freischalten" TabIndex="23"
+                AutomationProperties.Name="Ergebnis freischalten" Command="{Binding OpenPaywallCommand}" />
+      </Grid>
+    </Grid>
+
+    <!-- Preisblatt -->
+    <Grid Name="PaywallLayer"
+          IsVisible="{Binding IsPaywallVisible}"
+          KeyboardNavigation.TabNavigation="Cycle"
+          Background="{DynamicResource ScrimBrush}"
+          PointerPressed="OnPaywallScrimPressed">
+      <Border Name="PaywallSheet"
+              Width="320"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Background="{DynamicResource PaperBrush}"
+              BorderBrush="{DynamicResource PaperEdgeBrush}"
+              BorderThickness="2"
+              CornerRadius="2">
+        <StackPanel Margin="24,20" Spacing="12">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Panel Width="14" Height="16" VerticalAlignment="Center">
+              <Path Data="M4,7 V5 A3,3 0 0 1 10,5 V7"
+                    Stroke="{DynamicResource BrassBrush}"
+                    StrokeThickness="2" />
+              <Path Data="M2,6 H12 V13.5 H2 Z" Fill="{DynamicResource BrassBrush}" />
+            </Panel>
+            <TextBlock Classes="title paper-ink" Text="Ergebnis gesperrt" />
+          </StackPanel>
+          <TextBlock Classes="meta paper-ink-soft" Text="Demo — es wird nichts berechnet." />
+          <Button Name="PlanSubscriptionButton" Classes="plan" TabIndex="1"
+                  AutomationProperties.Name="Abo, 1,99 Euro pro Monat, jederzeit kündbar"
+                  Command="{Binding SelectPlanCommand}" CommandParameter="Subscription">
+            <StackPanel Spacing="2">
+              <TextBlock Text="Abo" FontWeight="SemiBold" FontSize="12" Classes="paper-ink" />
+              <TextBlock Text="1,99 € pro Monat" FontSize="12" Classes="paper-ink" />
+              <TextBlock Text="jederzeit kündbar" FontSize="11" Classes="paper-ink-soft" />
+            </StackPanel>
+          </Button>
+          <Button Name="PlanOneTimeButton" Classes="plan" TabIndex="2"
+                  AutomationProperties.Name="Einmalzahlung, 4,99 Euro"
+                  Command="{Binding SelectPlanCommand}" CommandParameter="OneTime">
+            <StackPanel Spacing="2">
+              <TextBlock Text="Einmalzahlung" FontWeight="SemiBold" FontSize="12" Classes="paper-ink" />
+              <TextBlock Text="4,99 €" FontSize="12" Classes="paper-ink" />
+              <TextBlock Text="einmalig, dauerhaft freigeschaltet" FontSize="11" Classes="paper-ink-soft" />
+            </StackPanel>
+          </Button>
+          <Button Name="PaywallCloseButton" Classes="plan" TabIndex="3"
+                  HorizontalContentAlignment="Center"
+                  AutomationProperties.Name="Schließen"
+                  Command="{Binding ClosePaywallCommand}">
+            <TextBlock Text="Schließen" FontSize="11" Classes="paper-ink" />
+          </Button>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <!-- Kaufdialog -->
+    <Grid Name="CheckoutLayer"
+          IsVisible="{Binding IsCheckoutVisible}"
+          KeyboardNavigation.TabNavigation="Cycle"
+          Background="{DynamicResource ScrimBrush}">
+      <Border Name="CheckoutPanel"
+              Width="320"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Background="{DynamicResource RaisedBrush}"
+              BorderBrush="{DynamicResource KeyEdgeBrush}"
+              BorderThickness="1"
+              CornerRadius="2"
+              Padding="20,18">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="title" Text="Kaufübersicht" />
+          <StackPanel Spacing="4">
+            <TextBlock Classes="meta" Text="{Binding CheckoutPlanLine}" />
+            <TextBlock Classes="meta secondary" Text="{Binding CheckoutNoteLine}" />
+          </StackPanel>
+          <TextBlock Classes="meta secondary" Text="Demo — es wird nichts berechnet." />
+          <StackPanel Spacing="8">
+            <Button Name="CheckoutConfirmButton" Classes="bar primary" TabIndex="1"
+                    MinHeight="36"
+                    HorizontalAlignment="Stretch"
+                    AutomationProperties.Name="Demo-Kauf bestätigen"
+                    Content="Demo-Kauf bestätigen"
+                    Command="{Binding ConfirmPurchaseCommand}" />
+            <Button Name="CheckoutCancelButton" Classes="bar" TabIndex="2"
+                    MinHeight="36"
+                    HorizontalAlignment="Stretch"
+                    AutomationProperties.Name="Abbrechen"
+                    Content="Abbrechen"
+                    Command="{Binding CancelPurchaseCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Panel>
+</Window>

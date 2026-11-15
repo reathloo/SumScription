@@ -1,0 +1,69 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="ChassisBrush" Color="#141A1F" />
+      <SolidColorBrush x:Key="RaisedBrush" Color="#232C34" />
+      <SolidColorBrush x:Key="RaisedHoverBrush" Color="#2A343D" />
+      <SolidColorBrush x:Key="RaisedPressedBrush" Color="#1B232A" />
+      <SolidColorBrush x:Key="SunkenBrush" Color="#171E24" />
+      <SolidColorBrush x:Key="SunkenHoverBrush" Color="#1F272E" />
+      <SolidColorBrush x:Key="SunkenPressedBrush" Color="#11171C" />
+      <SolidColorBrush x:Key="KeyEdgeBrush" Color="#3A4550" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E8EDF2" />
+      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#9FAAB8" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#35D6BA" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#4BE2C8" />
+      <SolidColorBrush x:Key="AccentPressedBrush" Color="#27BFA6" />
+      <SolidColorBrush x:Key="AccentTextBrush" Color="#04211C" />
+      <SolidColorBrush x:Key="FocusBrush" Color="#62C8FF" />
+      <SolidColorBrush x:Key="DangerBrush" Color="#A8261C" />
+      <SolidColorBrush x:Key="BrassBrush" Color="#8A6414" />
+      <SolidColorBrush x:Key="PaperBrush" Color="#EDF0F1" />
+      <SolidColorBrush x:Key="PaperEdgeBrush" Color="#6E7C8A" />
+      <SolidColorBrush x:Key="PaperInkBrush" Color="#11161A" />
+      <SolidColorBrush x:Key="PaperInkSoftBrush" Color="#4A555F" />
+      <SolidColorBrush x:Key="ScrimBrush" Color="#E605080B" />
+      <SolidColorBrush x:Key="ChipBrush" Color="#1C242B" />
+      <SolidColorBrush x:Key="ChipEdgeBrush" Color="#3A4550" />
+      <SolidColorBrush x:Key="PaperHoverBrush" Color="#1A11161A" />
+      <SolidColorBrush x:Key="PaperPressedBrush" Color="#2911161A" />
+    </ResourceDictionary>
+
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="ChassisBrush" Color="#E1E6EB" />
+      <SolidColorBrush x:Key="RaisedBrush" Color="#F4F7F9" />
+      <SolidColorBrush x:Key="RaisedHoverBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="RaisedPressedBrush" Color="#E7EBEF" />
+      <SolidColorBrush x:Key="SunkenBrush" Color="#D3DAE0" />
+      <SolidColorBrush x:Key="SunkenHoverBrush" Color="#DCE2E7" />
+      <SolidColorBrush x:Key="SunkenPressedBrush" Color="#C6CFD6" />
+      <SolidColorBrush x:Key="KeyEdgeBrush" Color="#C7CFD6" />
+      <SolidColorBrush x:Key="TextPrimaryBrush" Color="#10151A" />
+      <SolidColorBrush x:Key="TextSecondaryBrush" Color="#4E5966" />
+      <SolidColorBrush x:Key="AccentBrush" Color="#0E7A6E" />
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="#11897B" />
+      <SolidColorBrush x:Key="AccentPressedBrush" Color="#0A6359" />
+      <SolidColorBrush x:Key="AccentTextBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="FocusBrush" Color="#0A6C9E" />
+      <SolidColorBrush x:Key="DangerBrush" Color="#A8261C" />
+      <SolidColorBrush x:Key="BrassBrush" Color="#8A6414" />
+      <SolidColorBrush x:Key="PaperBrush" Color="#EDF0F1" />
+      <SolidColorBrush x:Key="PaperEdgeBrush" Color="#11161A" />
+      <SolidColorBrush x:Key="PaperInkBrush" Color="#11161A" />
+      <SolidColorBrush x:Key="PaperInkSoftBrush" Color="#4A555F" />
+      <SolidColorBrush x:Key="ScrimBrush" Color="#AD0B1016" />
+      <SolidColorBrush x:Key="ChipBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ChipEdgeBrush" Color="#C7CFD6" />
+      <SolidColorBrush x:Key="PaperHoverBrush" Color="#1A11161A" />
+      <SolidColorBrush x:Key="PaperPressedBrush" Color="#2911161A" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <SolidColorBrush x:Key="FocusInnerBrush" Color="#11161A" />
+
+  <FontFamily x:Key="SansFont">SF Pro Text, Segoe UI Variable Text, Segoe UI, Roboto, Noto Sans, Ubuntu Sans, Cantarell</FontFamily>
+  <FontFamily x:Key="MonoFont">SF Mono, Menlo, Cascadia Mono, Consolas, Ubuntu Mono, DejaVu Sans Mono</FontFamily>
+
+</ResourceDictionary>
