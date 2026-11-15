@@ -16,6 +16,7 @@ public sealed class CalculatorEngine
     private CalculatorError _error = CalculatorError.None;
     private decimal _result;
     private string _evaluatedExpression = string.Empty;
+    private bool _hasUserInput;
 
     private enum Phase
     {
@@ -95,6 +96,8 @@ public sealed class CalculatorEngine
             StartNewExpression();
         }
 
+        _hasUserInput = true;
+
         if (_entryBlank)
         {
             _entry = ZeroEntry + NumberFormatter.Separator;
@@ -126,6 +129,8 @@ public sealed class CalculatorEngine
             ContinueWithResult();
         }
 
+        _hasUserInput = true;
+
         if (_entryBlank && _operators.Count > 0)
         {
             _operators[^1] = op;
@@ -153,6 +158,7 @@ public sealed class CalculatorEngine
             StartNewExpression();
             _entry = NumberFormatter.Format(-value);
             _entryBlank = false;
+            _hasUserInput = true;
             return;
         }
 
@@ -160,6 +166,8 @@ public sealed class CalculatorEngine
         {
             return;
         }
+
+        _hasUserInput = true;
 
         _entry = _entry.StartsWith('-')
             ? _entry[1..]
@@ -183,6 +191,7 @@ public sealed class CalculatorEngine
         _entry = NumberFormatter.Format(value / 100m);
         _entryBlank = false;
         _phase = Phase.Typing;
+        _hasUserInput |= value != 0m;
     }
 
     /// <summary>Löscht die letzte Ziffer des Eintrags.</summary>
@@ -233,12 +242,12 @@ public sealed class CalculatorEngine
     }
 
     /// <summary>
-    /// Wertet den Ausdruck aus. Liefert <c>false</c> bei Fehler oder wenn bereits
-    /// ein Ergebnis angezeigt wird.
+    /// Wertet den Ausdruck aus. Liefert <c>false</c> bei Fehler, wenn bereits ein Ergebnis
+    /// angezeigt wird oder wenn noch keine Eingabe erfolgt ist.
     /// </summary>
     public bool Evaluate()
     {
-        if (_phase != Phase.Typing)
+        if (_phase != Phase.Typing || !_hasUserInput)
         {
             return false;
         }
@@ -309,6 +318,7 @@ public sealed class CalculatorEngine
         _phase = Phase.Typing;
         _error = CalculatorError.None;
         _evaluatedExpression = string.Empty;
+        _hasUserInput = false;
     }
 
     private void ContinueWithResult()
@@ -336,6 +346,7 @@ public sealed class CalculatorEngine
 
         _entryBlank = false;
         _phase = Phase.Typing;
+        _hasUserInput = true;
     }
 
     private static int CountSignificantDigits(string entry)

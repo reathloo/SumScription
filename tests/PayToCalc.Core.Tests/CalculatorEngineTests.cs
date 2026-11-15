@@ -88,6 +88,39 @@ public sealed class CalculatorEngineTests
     }
 
     [Fact]
+    public void Evaluate_WithoutAnyInput_ReturnsFalse()
+    {
+        var engine = new CalculatorEngine();
+
+        Assert.False(engine.Evaluate());
+        Assert.Equal(string.Empty, engine.ExpressionText);
+        Assert.Equal("0", engine.DisplayResult);
+        Assert.False(engine.HasError);
+    }
+
+    [Fact]
+    public void Evaluate_AfterClearAllWithoutInput_ReturnsFalse()
+    {
+        var engine = new CalculatorEngine();
+        Input.Enter(engine, "1+2");
+        engine.ClearAll();
+
+        Assert.False(engine.Evaluate());
+    }
+
+    [Fact]
+    public void Evaluate_AfterResultAndClearEntry_ReturnsFalse()
+    {
+        var engine = new CalculatorEngine();
+        Input.Enter(engine, "1+2");
+        Assert.True(engine.Evaluate());
+
+        engine.ClearEntry();
+
+        Assert.False(engine.Evaluate());
+    }
+
+    [Fact]
     public void Overflow_ShowsMessage()
     {
         var engine = new CalculatorEngine();
