@@ -6,6 +6,9 @@
 # dotenv files
 .env
 
+# Local agent work state
+.opencode/local/
+
 # User-specific files
 *.rsuser
 *.suo
