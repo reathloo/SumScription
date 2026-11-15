@@ -32,7 +32,10 @@
     <Grid RowDefinitions="54,*,Auto,Auto"
           Margin="20,10,20,18"
           IsEnabled="{Binding !IsOverlayOpen}">
-      <Grid Grid.Row="0" VerticalAlignment="Center">
+      <Grid Grid.Row="0"
+            Background="Transparent"
+            VerticalAlignment="Stretch"
+            PointerPressed="OnTitleBarPointerPressed">
         <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
           <Border Width="28" Height="28" CornerRadius="9"
                   Background="{DynamicResource OperatorBrush}">

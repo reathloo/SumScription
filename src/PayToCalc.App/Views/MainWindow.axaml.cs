@@ -331,6 +331,19 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OnTitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            return;
+        }
+
+        BeginMoveDrag(e);
+        e.Handled = true;
+    }
+
     private void OnEvaluated(object? sender, EventArgs e) => Dispatcher.UIThread.Post(AnimateResult);
 
     private void OnErrorAppeared(object? sender, EventArgs e) => Dispatcher.UIThread.Post(AnimateError);
