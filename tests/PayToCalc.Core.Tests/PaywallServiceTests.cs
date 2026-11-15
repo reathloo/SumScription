@@ -99,6 +99,19 @@ public sealed class PaywallServiceTests
     }
 
     [Fact]
+    public void UndefinedPlan_IsTreatedAsDefect()
+    {
+        var store = new FakePaywallStateStore { State = new PaywallState(9, true, (PaywallPlan)7) };
+
+        var service = new PaywallService(store);
+
+        Assert.Equal(PaywallState.Default, service.State);
+        Assert.Equal(PaywallPlan.None, service.State.Plan);
+        Assert.False(service.State.IsUnlocked);
+        Assert.True(service.IsResultVisible);
+    }
+
+    [Fact]
     public void NegativeCounter_IsNormalized()
     {
         var store = new FakePaywallStateStore { State = new PaywallState(-5, false, PaywallPlan.Subscription) };

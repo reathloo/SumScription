@@ -11,7 +11,7 @@ public sealed class JsonFilePaywallStateStore : IPaywallStateStore
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         WriteIndented = true,
-        Converters = { new JsonStringEnumConverter() },
+        Converters = { new JsonStringEnumConverter(namingPolicy: null, allowIntegerValues: false) },
     };
 
     /// <summary>Erzeugt den Store für einen festen Dateipfad.</summary>
@@ -44,7 +44,10 @@ public sealed class JsonFilePaywallStateStore : IPaywallStateStore
             }
 
             var json = File.ReadAllText(FilePath);
-            return JsonSerializer.Deserialize<PaywallState>(json, SerializerOptions) ?? PaywallState.Default;
+            var state = JsonSerializer.Deserialize<PaywallState>(json, SerializerOptions);
+
+            // Ein nicht definierter Tarif ist ein Defekt der Datei, kein gültiger Zustand.
+            return state is null || !Enum.IsDefined(state.Plan) ? PaywallState.Default : state;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException or NotSupportedException)
         {

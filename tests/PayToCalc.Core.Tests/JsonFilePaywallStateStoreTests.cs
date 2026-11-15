@@ -164,6 +164,42 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
     }
 
     [Fact]
+    public void JsonWithNumericPlan_ReturnsDefaultState()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(_path, """{ "SuccessfulEvaluations": 9, "IsUnlocked": true, "Plan": 7 }""");
+
+        var store = new JsonFilePaywallStateStore(_path);
+
+        Assert.Equal(PaywallState.Default, store.Load());
+    }
+
+    [Fact]
+    public void NumericPlan_YieldsDefaultServiceState()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(_path, """{ "SuccessfulEvaluations": 9, "IsUnlocked": true, "Plan": 7 }""");
+
+        var service = new PaywallService(new JsonFilePaywallStateStore(_path));
+
+        Assert.Equal(PaywallState.Default, service.State);
+        Assert.Equal(PaywallPlan.None, service.State.Plan);
+        Assert.True(service.IsResultVisible);
+    }
+
+    [Fact]
+    public void UnknownPlanName_YieldsDefaultServiceState()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(_path, """{ "SuccessfulEvaluations": 2, "IsUnlocked": true, "Plan": "Unfug" }""");
+
+        var service = new PaywallService(new JsonFilePaywallStateStore(_path));
+
+        Assert.Equal(PaywallState.Default, service.State);
+        Assert.True(service.IsResultVisible);
+    }
+
+    [Fact]
     public void StatePathIsDirectory_ReturnsDefaultStateWithoutException()
     {
         Directory.CreateDirectory(_path);

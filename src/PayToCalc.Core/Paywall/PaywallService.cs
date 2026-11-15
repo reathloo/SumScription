@@ -52,8 +52,17 @@ public sealed class PaywallService
         _store.Save(State);
     }
 
-    private static PaywallState Normalize(PaywallState state) => new(
-        Math.Max(0, state.SuccessfulEvaluations),
-        state.IsUnlocked,
-        state.IsUnlocked ? state.Plan : PaywallPlan.None);
+    private static PaywallState Normalize(PaywallState state)
+    {
+        // Defensiv: ein nicht definierter Tarif kann nur aus einer defekten Quelle stammen.
+        if (!Enum.IsDefined(state.Plan))
+        {
+            return PaywallState.Default;
+        }
+
+        return new PaywallState(
+            Math.Max(0, state.SuccessfulEvaluations),
+            state.IsUnlocked,
+            state.IsUnlocked ? state.Plan : PaywallPlan.None);
+    }
 }
