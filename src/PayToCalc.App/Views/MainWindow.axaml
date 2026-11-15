@@ -14,7 +14,7 @@
         WindowStartupLocation="CenterScreen">
 
   <Panel>
-    <Grid RowDefinitions="36,*,Auto,44">
+    <Grid RowDefinitions="36,*,Auto,44" IsEnabled="{Binding !IsOverlayOpen}">
 
       <!-- Kopfleiste -->
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="12,0">
