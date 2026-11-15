@@ -1,9 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>PayToCalc.Core</RootNamespace>
-    <AssemblyName>PayToCalc.Core</AssemblyName>
-  </PropertyGroup>
-
-</Project>

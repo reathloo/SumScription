@@ -1,9 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/PayToCalc.App/PayToCalc.App.csproj" />
-    <Project Path="src/PayToCalc.Core/PayToCalc.Core.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/PayToCalc.Core.Tests/PayToCalc.Core.Tests.csproj" />
-  </Folder>
-</Solution>

@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SumScription.App/SumScription.App.csproj" />
+    <Project Path="src/SumScription.Core/SumScription.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SumScription.Core.Tests/SumScription.Core.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,8 +1,8 @@
-# payToCalc — Designrichtung
+# SumScription — Designrichtung
 
 ## Charakter
 
-payToCalc ist ein moderner Desktop-Taschenrechner mit einem ruhigen, halbtransparenten „Liquid Glass“-Look. Die Oberfläche bleibt während des Rechnens bewusst seriös; erst die fiktive Paywall bricht diesen Ton als übertriebener Gag.
+SumScription ist ein moderner Desktop-Taschenrechner mit einem ruhigen, halbtransparenten „Liquid Glass“-Look. Die Oberfläche bleibt während des Rechnens bewusst seriös; erst die fiktive Paywall bricht diesen Ton als übertriebener Gag.
 
 ## Oberfläche
 
@@ -12,7 +12,7 @@ payToCalc ist ein moderner Desktop-Taschenrechner mit einem ruhigen, halbtranspa
 - SF Pro beziehungsweise geeignete Systemschriften; große, leichte Ergebnisziffern und kompakte Beschriftungen.
 - Dark und Light Theme nutzen dieselbe Hierarchie mit angepassten semantischen Farben.
 - Sichtbare Hover-, Press- und Tastaturfokus-Zustände; Tastatur und Ziffernblock funktionieren vollständig.
-- Reduzierte Bewegung wird über `PAYTOCALC_REDUCED_MOTION=1` unterstützt.
+- Reduzierte Bewegung wird über `SUMSCRIPTION_REDUCED_MOTION=1` unterstützt.
 
 ## Paywall-Parodie
 
