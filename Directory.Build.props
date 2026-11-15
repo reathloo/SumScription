@@ -8,4 +8,10 @@
     <Deterministic>true</Deterministic>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Buildausgaben liegen außerhalb von src/ und tests/, damit dort nur Quellen stehen. -->
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+  </PropertyGroup>
+
 </Project>
