@@ -1,3 +1,4 @@
+using System.Text.Json;
 using PayToCalc.Core.Paywall;
 
 namespace PayToCalc.Core.Tests;
@@ -116,5 +117,124 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
 
         Assert.Contains("PayToCalc", store.FilePath, StringComparison.Ordinal);
         Assert.EndsWith("state.json", store.FilePath, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void EmptyFile_ReturnsDefaultState()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(_path, string.Empty);
+
+        var store = new JsonFilePaywallStateStore(_path);
+
+        Assert.Equal(PaywallState.Default, store.Load());
+    }
+
+    [Fact]
+    public void JsonNull_ReturnsDefaultState()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(_path, "null");
+
+        var store = new JsonFilePaywallStateStore(_path);
+
+        Assert.Equal(PaywallState.Default, store.Load());
+    }
+
+    [Fact]
+    public void JsonWithArrayRoot_ReturnsDefaultState()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(_path, "[1, 2, 3]");
+
+        var store = new JsonFilePaywallStateStore(_path);
+
+        Assert.Equal(PaywallState.Default, store.Load());
+    }
+
+    [Fact]
+    public void JsonWithUnknownPlanName_ReturnsDefaultState()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(_path, """{ "SuccessfulEvaluations": 9, "IsUnlocked": true, "Plan": "Lifetime" }""");
+
+        var store = new JsonFilePaywallStateStore(_path);
+
+        Assert.Equal(PaywallState.Default, store.Load());
+    }
+
+    [Fact]
+    public void StatePathIsDirectory_ReturnsDefaultStateWithoutException()
+    {
+        Directory.CreateDirectory(_path);
+
+        var store = new JsonFilePaywallStateStore(_path);
+
+        var exception = Record.Exception(() => store.Load());
+
+        Assert.Null(exception);
+        Assert.Equal(PaywallState.Default, store.Load());
+    }
+
+    [Fact]
+    public void ParentPathIsFile_ReturnsDefaultStateAndSaveDoesNotThrow()
+    {
+        Directory.CreateDirectory(_directory);
+        var blockingFile = Path.Combine(_directory, "blockiert");
+        File.WriteAllText(blockingFile, "kein Verzeichnis");
+        var store = new JsonFilePaywallStateStore(Path.Combine(blockingFile, "state.json"));
+
+        Assert.Equal(PaywallState.Default, store.Load());
+        Assert.Null(Record.Exception(() => store.Save(new PaywallState(2, false, PaywallPlan.None))));
+        Assert.Equal(PaywallState.Default, store.Load());
+    }
+
+    [Fact]
+    public void Save_WritesValidJsonWithoutTempFileLeftBehind()
+    {
+        var store = new JsonFilePaywallStateStore(_path);
+
+        store.Save(new PaywallState(3, true, PaywallPlan.Subscription));
+
+        Assert.False(File.Exists(_path + ".tmp"));
+        Assert.Empty(Directory.GetFiles(_directory, "*.tmp"));
+
+        using var document = JsonDocument.Parse(File.ReadAllText(_path));
+        Assert.Equal(3, document.RootElement.GetProperty("SuccessfulEvaluations").GetInt32());
+        Assert.True(document.RootElement.GetProperty("IsUnlocked").GetBoolean());
+        Assert.Equal("Subscription", document.RootElement.GetProperty("Plan").GetString());
+    }
+
+    [Fact]
+    public void Save_ReplacesExistingStateCompletely()
+    {
+        var store = new JsonFilePaywallStateStore(_path);
+        store.Save(new PaywallState(25, true, PaywallPlan.OneTime));
+
+        store.Save(PaywallState.Default);
+
+        var json = File.ReadAllText(_path);
+        using var document = JsonDocument.Parse(json);
+        Assert.Equal(0, document.RootElement.GetProperty("SuccessfulEvaluations").GetInt32());
+        Assert.False(document.RootElement.GetProperty("IsUnlocked").GetBoolean());
+        Assert.Equal("None", document.RootElement.GetProperty("Plan").GetString());
+        Assert.DoesNotContain("OneTime", json, StringComparison.Ordinal);
+        Assert.Equal(PaywallState.Default, store.Load());
+    }
+
+    [Fact]
+    public void Save_WhenTempPathIsBlocked_KeepsPreviousStateIntact()
+    {
+        var store = new JsonFilePaywallStateStore(_path);
+        store.Save(new PaywallState(4, false, PaywallPlan.None));
+        var previous = File.ReadAllText(_path);
+
+        Directory.CreateDirectory(_path + ".tmp");
+
+        var exception = Record.Exception(() => store.Save(new PaywallState(9, true, PaywallPlan.Subscription)));
+
+        Assert.Null(exception);
+        Assert.Equal(previous, File.ReadAllText(_path));
+        Assert.Equal(new PaywallState(4, false, PaywallPlan.None), store.Load());
     }
 }
