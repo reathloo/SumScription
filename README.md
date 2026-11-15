@@ -1,27 +1,27 @@
 # SumScription
 
-Ein moderner Desktop-Taschenrechner mit halbtransparentem „Liquid Glass“-Look und einer absichtlich übertriebenen, vollständig fiktiven Paywall.
+A modern desktop calculator with a translucent liquid-glass interface and an intentionally over-the-top, entirely fictional paywall.
 
 > [!IMPORTANT]
-> Die Paywall ist eine Parodie. Es werden keine Zahlungsdaten abgefragt, keine Käufe ausgeführt und keine Gebühren berechnet.
+> The paywall is a parody. It never requests payment details, completes purchases, or charges money.
 
-## Funktionen
+## Features
 
-- Grundrechenarten, Prozent, Vorzeichenwechsel und Dezimalzahlen
-- Punkt-vor-Strich-Auswertung und lesbarer Rechenverlauf
-- Vollständige Bedienung über Tastatur und Ziffernblock
-- Dark- und Light-Theme mit skalierbarer Avalonia-Oberfläche
-- Reduzierte Bewegung über `SUMSCRIPTION_REDUCED_MOTION=1`
-- Acht sichtbare kostenlose Auswertungen; bei der neunten erscheint die Paywall-Parodie
-- Drei bewusst nervige Ablehnungsstufen, bevor die Eingabe wieder freigegeben wird
-- Lokaler Demo-Zustand ohne Benutzerkonto oder Netzwerkzugriff
+- Basic arithmetic, percentages, sign changes, and decimal numbers
+- Standard operator precedence and a readable calculation history
+- Full keyboard and numeric keypad support
+- Dark and light themes with a scalable Avalonia interface
+- Reduced motion through `SUMSCRIPTION_REDUCED_MOTION=1`
+- Eight visible free calculations before the paywall parody appears on the ninth
+- Three deliberately annoying dismissal stages before calculator input is restored
+- Local demo state with no user account or network access
 
-## Voraussetzungen
+## Requirements
 
-- [.NET SDK 10](https://dotnet.microsoft.com/download/dotnet/10.0)
-- macOS, Linux oder Windows
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- macOS, Linux, or Windows
 
-## Starten
+## Run the app
 
 ```bash
 git clone https://github.com/reathloo/SumScription.git
@@ -29,13 +29,13 @@ cd SumScription
 dotnet run --project src/SumScription.App/SumScription.App.csproj
 ```
 
-Die Debug-Konfiguration zeigt gegebenenfalls den Avalonia-Diagnostics-Schalter. Für eine Oberfläche ohne Debug-Werkzeuge:
+The debug configuration may display the Avalonia diagnostics toggle. To run without debug tooling:
 
 ```bash
 dotnet run --configuration Release --project src/SumScription.App/SumScription.App.csproj
 ```
 
-## Entwickeln und prüfen
+## Build and test
 
 ```bash
 dotnet restore SumScription.slnx
@@ -43,13 +43,13 @@ dotnet build SumScription.slnx --configuration Release --no-restore
 dotnet test SumScription.slnx --configuration Release --no-build
 ```
 
-## Projektstruktur
+## Project structure
 
 ```text
-src/SumScription.App/       Avalonia-Oberfläche und ViewModel
-src/SumScription.Core/      Rechner-, Verlaufs- und Paywall-Logik
-tests/                   xUnit-Tests
-docs/design.md           Aktuelle Designrichtung
+src/SumScription.App/        Avalonia UI and view model
+src/SumScription.Core/       Calculator, history, and paywall logic
+tests/                       xUnit tests
+docs/design.md               Current design direction
 ```
 
-Der Paywall-Zähler wird als kleine JSON-Datei im plattformspezifischen Anwendungsdatenverzeichnis gespeichert. Der Rechenverlauf bleibt ausschließlich im Arbeitsspeicher und wird beim Beenden verworfen.
+The paywall counter is stored as a small JSON file in the platform-specific application data directory. Calculation history is kept in memory only and is discarded when the app exits.
