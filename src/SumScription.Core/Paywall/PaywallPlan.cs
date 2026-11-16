@@ -1,14 +1,24 @@
 namespace SumScription.Core.Paywall;
 
-/// <summary>Gewählter Demo-Tarif.</summary>
+/// <summary>Selected fictional result-unlock plan.</summary>
 public enum PaywallPlan
 {
-    /// <summary>Kein Tarif gewählt.</summary>
+    /// <summary>No plan selected.</summary>
     None,
 
-    /// <summary>Abo (Demo).</summary>
-    Subscription,
+    /// <summary>Monthly result subscription.</summary>
+    Monthly,
 
-    /// <summary>Einmalkauf (Demo).</summary>
-    OneTime,
+    /// <summary>Annual result subscription.</summary>
+    Annual,
+
+    /// <summary>One result without an ongoing unlock.</summary>
+    SingleCalculation,
+
+    /// <summary>Annual result subscription with one hundred percentage credits.</summary>
+    AnnualPremium,
+
+    // Legacy names keep older persisted development state readable.
+    Subscription = Monthly,
+    OneTime = Annual,
 }
