@@ -6,7 +6,7 @@
     <RootNamespace>SumScription.App</RootNamespace>
     <AssemblyName>SumScription.App</AssemblyName>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <ApplicationIcon />
+    <ApplicationIcon>Assets/app-icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +18,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SumScription.Core\SumScription.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/app-icon.png" />
+    <AvaloniaResource Include="Assets/app-icon.ico" />
+    <None Include="Assets/app-icon.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Assets/app-icon.icns" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

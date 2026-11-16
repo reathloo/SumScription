@@ -1,6 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="SumScription.App.App"
+             Name="SumScription"
              RequestedThemeVariant="Default">
 
   <Application.Resources>
