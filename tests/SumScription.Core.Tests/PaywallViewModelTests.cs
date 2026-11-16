@@ -14,25 +14,29 @@ public sealed class PaywallViewModelTests
         EvaluateSuccessfully(viewModel, PaywallService.FreeEvaluations);
 
         Assert.False(viewModel.IsPaywallVisible);
+        Assert.Equal(0d, viewModel.PaywallOpacity);
         Assert.False(viewModel.CanReopenPaywall);
 
         EvaluateSuccessfully(viewModel, 1);
 
         Assert.True(viewModel.IsPaywallVisible);
-        Assert.Equal("Noch 3 Ablehnungen bis zurück zum Rechner", viewModel.PaywallDismissalHint);
+        Assert.False(viewModel.IsShopIconVisible);
+        Assert.Equal(1d, viewModel.PaywallOpacity);
+        Assert.Equal(0d, viewModel.PremiumPercentOfferOpacity);
+        Assert.Equal(1d, viewModel.ResultOfferOpacity);
 
         viewModel.ClosePaywall();
         Assert.True(viewModel.IsPaywallVisible);
-        Assert.Equal("Noch 2 Ablehnungen bis zurück zum Rechner", viewModel.PaywallDismissalHint);
 
         viewModel.ClosePaywall();
         Assert.True(viewModel.IsPaywallVisible);
-        Assert.Equal("Noch 1 Ablehnung bis zurück zum Rechner", viewModel.PaywallDismissalHint);
 
         viewModel.ClosePaywall();
         Assert.False(viewModel.IsPaywallVisible);
+        Assert.Equal(0d, viewModel.PaywallOpacity);
         Assert.False(viewModel.IsOverlayOpen);
         Assert.True(viewModel.CanReopenPaywall);
+        Assert.True(viewModel.IsShopIconVisible);
     }
 
     [Fact]
@@ -46,7 +50,75 @@ public sealed class PaywallViewModelTests
         EvaluateSuccessfully(viewModel, PaywallService.FreeEvaluations + 1);
 
         Assert.True(viewModel.IsPaywallVisible);
-        Assert.Equal("Dein Ergebnis ist fertig.", viewModel.PaywallTitle);
+        Assert.Equal("Your answer is ready.", viewModel.PaywallTitle);
+    }
+
+    [Fact]
+    public void SingleCalculationOffer_UsesSpecialPriceAndDoesNotUnlockSubscription()
+    {
+        var viewModel = CreateViewModel();
+        EvaluateSuccessfully(viewModel, PaywallService.FreeEvaluations + 1);
+
+        viewModel.SelectPlan(PaywallPlan.SingleCalculation);
+
+        Assert.True(viewModel.IsCheckoutVisible);
+        Assert.Equal("1 result · €4.99", viewModel.CheckoutPlanLine);
+        Assert.Equal("Special offer · valid for this result only", viewModel.CheckoutNoteLine);
+
+        viewModel.ConfirmPurchase();
+
+        Assert.False(viewModel.IsUnlocked);
+        Assert.False(viewModel.IsResultMasked);
+
+        EvaluateSuccessfully(viewModel, 1);
+        Assert.True(viewModel.IsResultMasked);
+    }
+
+    [Fact]
+    public void ResultOffers_SwitchBetweenMonthlyAndAnnualGroups()
+    {
+        var viewModel = CreateViewModel();
+
+        Assert.True(viewModel.IsMonthlyPlans);
+        Assert.False(viewModel.IsAnnualPlans);
+        Assert.Equal(1d, viewModel.MonthlyPlansOpacity);
+        Assert.Equal(0d, viewModel.AnnualPlansOpacity);
+
+        viewModel.ShowAnnualPlansCommand.Execute(null);
+
+        Assert.False(viewModel.IsMonthlyPlans);
+        Assert.True(viewModel.IsAnnualPlans);
+        Assert.Equal(0d, viewModel.MonthlyPlansOpacity);
+        Assert.Equal(1d, viewModel.AnnualPlansOpacity);
+
+        viewModel.SelectPlan(PaywallPlan.Annual);
+        Assert.Equal("Annual Standard · €499 per year", viewModel.CheckoutPlanLine);
+        Assert.Equal("One year of premium results without percentage credits", viewModel.CheckoutNoteLine);
+
+        viewModel.CancelPurchaseCommand.Execute(null);
+        viewModel.ShowMonthlyPlansCommand.Execute(null);
+        viewModel.SelectPlan(PaywallPlan.Monthly);
+        Assert.Equal("Monthly Ultra · €74.99 per month", viewModel.CheckoutPlanLine);
+    }
+
+    [Fact]
+    public void AnnualPremiumPurchase_UnlocksResultsAndAddsOneHundredPercentCredits()
+    {
+        var viewModel = CreateViewModel();
+        EvaluateSuccessfully(viewModel, PaywallService.FreeEvaluations + 1);
+
+        viewModel.SelectPlan(PaywallPlan.AnnualPremium);
+
+        Assert.Equal("Annual Premium · €699 · includes 100 % calculations", viewModel.CheckoutPlanLine);
+        Assert.Equal("One year of results plus 100 premium percentage credits", viewModel.CheckoutNoteLine);
+
+        viewModel.ConfirmPurchase();
+
+        Assert.True(viewModel.IsUnlocked);
+        Assert.False(viewModel.IsResultMasked);
+        Assert.Equal(PaywallPlan.AnnualPremium, viewModel.SelectedPlan);
+        Assert.Equal(100, viewModel.PremiumPercentCredits);
+        Assert.Equal("ANNUAL PREMIUM + 100 % CREDITS ACQUIRED ✨", viewModel.PurchaseCelebrationText);
     }
 
     private static MainWindowViewModel CreateViewModel() =>
