@@ -123,8 +123,7 @@
     <Setter Property="TextTrimming" Value="CharacterEllipsis" />
   </Style>
   <Style Selector="TextBlock.result.masked">
-    <Setter Property="Opacity" Value="0.24" />
-    <Setter Property="Effect"><BlurEffect Radius="10" /></Setter>
+    <Setter Property="Opacity" Value="0" />
   </Style>
   <Style Selector="TextBlock.expression">
     <Setter Property="FontSize" Value="16" />
@@ -196,6 +195,20 @@
     <Setter Property="Background" Value="{DynamicResource OperatorPressedBrush}" />
     <Setter Property="RenderTransform" Value="scale(0.96)" />
   </Style>
+  <Style Selector="Button.offer-bubble">
+    <Setter Property="Theme" Value="{StaticResource CalcKeyTheme}" />
+    <Setter Property="Padding" Value="5,4" />
+    <Setter Property="Background" Value="{DynamicResource PaywallBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource PaywallEdgeBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+  <Style Selector="Button.offer-bubble:pointerover /template/ Border#PART_Surface">
+    <Setter Property="Background" Value="{DynamicResource PaywallHotBrush}" />
+    <Setter Property="RenderTransform" Value="scale(1.06)" />
+  </Style>
+  <Style Selector="Button.offer-bubble:pressed /template/ Border#PART_Surface">
+    <Setter Property="RenderTransform" Value="scale(0.94)" />
+  </Style>
 
   <Style Selector="Button.glass"><Setter Property="Theme" Value="{StaticResource GlassButtonTheme}" />
     <Setter Property="Background" Value="{DynamicResource GlassBrush}" />
@@ -212,6 +225,32 @@
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
   </Style>
   <Style Selector="Button.plan:pointerover /template/ Border#PART_Surface"><Setter Property="Background" Value="#3EFFFFFF" /></Style>
+  <Style Selector="Button.credit-pack">
+    <Setter Property="MinHeight" Value="60" />
+    <Setter Property="Padding" Value="14,8" />
+  </Style>
+  <Style Selector="Button.billing-segment"><Setter Property="Theme" Value="{StaticResource GlassButtonTheme}" />
+    <Setter Property="MinHeight" Value="34" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource PaywallSoftBrush}" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="FontWeight" Value="Black" />
+  </Style>
+  <Style Selector="Button.billing-segment.active">
+    <Setter Property="Background" Value="{DynamicResource PaywallCyanBrush}" />
+    <Setter Property="BorderBrush" Value="#D6FFFFFF" />
+    <Setter Property="Foreground" Value="{DynamicResource PaywallButtonTextBrush}" />
+  </Style>
+  <Style Selector="Button.billing-segment:pointerover /template/ Border#PART_Surface">
+    <Setter Property="Background" Value="#2EFFFFFF" />
+  </Style>
+  <Style Selector="Button.billing-segment.active:pointerover /template/ Border#PART_Surface">
+    <Setter Property="Background" Value="#FF78F7FF" />
+  </Style>
+  <Style Selector="Button.billing-segment:pressed /template/ Border#PART_Surface">
+    <Setter Property="RenderTransform" Value="scale(0.97)" />
+  </Style>
   <Style Selector="Button.paywall-primary"><Setter Property="Theme" Value="{StaticResource GlassButtonTheme}" />
     <Setter Property="MinHeight" Value="48" />
     <Setter Property="Background" Value="{DynamicResource PaywallButtonBrush}" />
@@ -220,9 +259,21 @@
     <Setter Property="FontSize" Value="14" />
   </Style>
   <Style Selector="Button.paywall-secondary"><Setter Property="Theme" Value="{StaticResource GlassButtonTheme}" />
-    <Setter Property="MinHeight" Value="40" />
-    <Setter Property="Background" Value="#16FFFFFF" />
-    <Setter Property="Foreground" Value="White" />
-    <Setter Property="BorderBrush" Value="#3FFFFFFF" />
+    <Setter Property="MinHeight" Value="38" />
+    <Setter Property="Padding" Value="18,0" />
+    <Setter Property="Background" Value="#D321123F" />
+    <Setter Property="Foreground" Value="#FFFDF8FF" />
+    <Setter Property="BorderBrush" Value="#8CFFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.paywall-secondary:pointerover /template/ Border#PART_Surface">
+    <Setter Property="Background" Value="#F02E1854" />
+    <Setter Property="BorderBrush" Value="#C7FFFFFF" />
+  </Style>
+  <Style Selector="Button.paywall-secondary:pressed /template/ Border#PART_Surface">
+    <Setter Property="Background" Value="#F0180D31" />
+    <Setter Property="RenderTransform" Value="scale(0.97)" />
   </Style>
 </Styles>
