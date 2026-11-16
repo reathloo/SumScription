@@ -5,18 +5,18 @@ namespace SumScription.Core.Tests;
 public sealed class PaywallServiceTests
 {
     [Fact]
-    public void FreeEvaluations_AreVisibleUpToEight()
+    public void FreeEvaluations_AreVisibleUntilConfiguredTrigger()
     {
         var service = new PaywallService(new FakePaywallStateStore());
 
         for (var i = 1; i <= PaywallService.FreeEvaluations; i++)
         {
-            Assert.True(service.RegisterSuccessfulEvaluation(), $"Auswertung {i} muss sichtbar sein.");
+            Assert.True(service.RegisterSuccessfulEvaluation(), $"Evaluation {i} must remain visible.");
         }
 
         Assert.False(service.RegisterSuccessfulEvaluation());
         Assert.False(service.IsResultVisible);
-        Assert.Equal(9, service.State.SuccessfulEvaluations);
+        Assert.Equal(PaywallService.MaximumPaywallTriggerEvaluation, service.State.SuccessfulEvaluations);
     }
 
     [Fact]
@@ -32,8 +32,35 @@ public sealed class PaywallServiceTests
         Assert.Equal(2, store.SaveCount);
     }
 
+    [Theory]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    public void ConfiguredTrigger_MasksExactlyThatEvaluation(int triggerEvaluation)
+    {
+        var service = new PaywallService(new FakePaywallStateStore(), triggerEvaluation);
+
+        for (var evaluation = 1; evaluation < triggerEvaluation; evaluation++)
+        {
+            Assert.True(service.RegisterSuccessfulEvaluation());
+        }
+
+        Assert.False(service.RegisterSuccessfulEvaluation());
+        Assert.Equal(triggerEvaluation, service.State.SuccessfulEvaluations);
+    }
+
+    [Theory]
+    [InlineData(3)]
+    [InlineData(8)]
+    public void TriggerOutsideSupportedRange_IsRejected(int triggerEvaluation)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new PaywallService(new FakePaywallStateStore(), triggerEvaluation));
+    }
+
     [Fact]
-    public void Unlock_MakesResultVisibleAndStoresPlan()
+    public void Unlock_MakesResultVisibleWithoutPersistingThePurchase()
     {
         var store = new FakePaywallStateStore();
         var service = new PaywallService(store);
@@ -45,11 +72,13 @@ public sealed class PaywallServiceTests
 
         Assert.False(service.IsResultVisible);
 
-        service.Unlock(PaywallPlan.Subscription);
+        service.Unlock(PaywallPlan.Monthly);
 
         Assert.True(service.IsResultVisible);
-        Assert.True(store.State.IsUnlocked);
-        Assert.Equal(PaywallPlan.Subscription, store.State.Plan);
+        Assert.True(service.State.IsUnlocked);
+        Assert.Equal(PaywallPlan.Monthly, service.State.Plan);
+        Assert.False(store.State.IsUnlocked);
+        Assert.Equal(PaywallPlan.None, store.State.Plan);
     }
 
     [Fact]
@@ -65,13 +94,31 @@ public sealed class PaywallServiceTests
     }
 
     [Fact]
+    public void SingleCalculation_DoesNotUnlockFutureResultsOrPersist()
+    {
+        var store = new FakePaywallStateStore();
+        var service = new PaywallService(store);
+        for (var i = 0; i < PaywallService.MaximumPaywallTriggerEvaluation; i++)
+        {
+            service.RegisterSuccessfulEvaluation();
+        }
+
+        service.Unlock(PaywallPlan.SingleCalculation);
+
+        Assert.False(service.IsResultVisible);
+        Assert.False(service.State.IsUnlocked);
+        Assert.Equal(PaywallPlan.SingleCalculation, service.State.Plan);
+        Assert.Equal(PaywallPlan.None, store.State.Plan);
+    }
+
+    [Fact]
     public void Reset_ResetsCounterUnlockAndPlan()
     {
         var store = new FakePaywallStateStore();
         var service = new PaywallService(store);
 
         service.RegisterSuccessfulEvaluation();
-        service.Unlock(PaywallPlan.OneTime);
+        service.Unlock(PaywallPlan.Annual);
 
         service.Reset();
 
@@ -82,10 +129,21 @@ public sealed class PaywallServiceTests
         Assert.Equal(PaywallState.Default, store.State);
     }
 
+    [Fact]
+    public void Reset_RemovesPremiumPercentCredits()
+    {
+        var service = new PaywallService(new FakePaywallStateStore());
+        service.PurchasePremiumPercentPack(PremiumPercentPack.Hundred);
+
+        service.Reset();
+
+        Assert.Equal(0, service.State.PremiumPercentCredits);
+    }
+
     [Theory]
-    [InlineData(PaywallPlan.Subscription)]
-    [InlineData(PaywallPlan.OneTime)]
-    public void Plan_SurvivesReload(PaywallPlan plan)
+    [InlineData(PaywallPlan.Monthly)]
+    [InlineData(PaywallPlan.Annual)]
+    public void FictionalResultPurchase_IsClearedOnReload(PaywallPlan plan)
     {
         var store = new FakePaywallStateStore();
         var service = new PaywallService(store);
@@ -93,9 +151,32 @@ public sealed class PaywallServiceTests
 
         var reloaded = new PaywallService(store);
 
-        Assert.True(reloaded.State.IsUnlocked);
-        Assert.Equal(plan, reloaded.State.Plan);
+        Assert.False(reloaded.State.IsUnlocked);
+        Assert.Equal(PaywallPlan.None, reloaded.State.Plan);
         Assert.True(reloaded.IsResultVisible);
+    }
+
+    [Fact]
+    public void EvaluationPersistsOnlyTheCounterWhilePurchasesStayInMemory()
+    {
+        var store = new FakePaywallStateStore();
+        var service = new PaywallService(store);
+        service.Unlock(PaywallPlan.Annual);
+        service.PurchasePremiumPercentPack(PremiumPercentPack.Ten);
+
+        service.RegisterSuccessfulEvaluation();
+
+        Assert.True(service.State.IsUnlocked);
+        Assert.Equal(10, service.State.PremiumPercentCredits);
+        Assert.Equal(1, store.State.SuccessfulEvaluations);
+        Assert.False(store.State.IsUnlocked);
+        Assert.Equal(PaywallPlan.None, store.State.Plan);
+        Assert.Equal(0, store.State.PremiumPercentCredits);
+
+        var reloaded = new PaywallService(store);
+        Assert.Equal(1, reloaded.State.SuccessfulEvaluations);
+        Assert.False(reloaded.State.IsUnlocked);
+        Assert.Equal(0, reloaded.State.PremiumPercentCredits);
     }
 
     [Fact]
@@ -114,12 +195,37 @@ public sealed class PaywallServiceTests
     [Fact]
     public void NegativeCounter_IsNormalized()
     {
-        var store = new FakePaywallStateStore { State = new PaywallState(-5, false, PaywallPlan.Subscription) };
+        var store = new FakePaywallStateStore { State = new PaywallState(-5, false, PaywallPlan.Monthly) };
 
         var service = new PaywallService(store);
 
         Assert.Equal(0, service.State.SuccessfulEvaluations);
         Assert.Equal(PaywallPlan.None, service.State.Plan);
         Assert.Equal(PaywallService.FreeEvaluations, service.RemainingFreeEvaluations);
+    }
+
+    [Fact]
+    public void InvalidPremiumPack_DoesNotChangeOrPersistState()
+    {
+        var store = new FakePaywallStateStore();
+        var service = new PaywallService(store);
+
+        service.PurchasePremiumPercentPack((PremiumPercentPack)7);
+
+        Assert.Equal(0, service.State.PremiumPercentCredits);
+        Assert.Equal(0, store.SaveCount);
+    }
+
+    [Fact]
+    public void NegativePremiumCredits_AreNormalized()
+    {
+        var store = new FakePaywallStateStore
+        {
+            State = new PaywallState(0, false, PaywallPlan.None, -5),
+        };
+
+        var service = new PaywallService(store);
+
+        Assert.Equal(0, service.State.PremiumPercentCredits);
     }
 }

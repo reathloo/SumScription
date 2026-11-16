@@ -12,18 +12,37 @@ public sealed class CalculatorSessionTests
     }
 
     [Fact]
-    public void NinthEvaluation_IsMasked()
+    public void TriggerEvaluation_IsMasked()
     {
         var session = CreateSession(out _);
 
         for (var i = 0; i < PaywallService.FreeEvaluations; i++)
         {
             Evaluate(session, "1+1");
-            Assert.False(session.IsResultMasked, $"Auswertung {i + 1} muss sichtbar sein.");
+            Assert.False(session.IsResultMasked, $"Evaluation {i + 1} must remain visible.");
             Assert.Equal("2", session.DisplayResult);
         }
 
         Evaluate(session, "2+2");
+
+        Assert.True(session.IsResultMasked);
+        Assert.Equal("4", session.DisplayResult);
+        Assert.Equal("2 + 2", session.ExpressionText);
+    }
+
+    [Fact]
+    public void MaskedResult_CannotBeRevealedOrReusedWithoutPurchase()
+    {
+        var session = CreateSession(out _);
+        for (var i = 0; i <= PaywallService.FreeEvaluations; i++)
+        {
+            Evaluate(session, "2+2");
+        }
+
+        Assert.True(session.IsResultMasked);
+        Assert.False(session.InputOperator('+'));
+        session.ToggleSign();
+        session.Backspace();
 
         Assert.True(session.IsResultMasked);
         Assert.Equal("4", session.DisplayResult);
@@ -84,7 +103,7 @@ public sealed class CalculatorSessionTests
         Assert.False(session.Evaluate());
 
         Assert.Equal(0, store.State.SuccessfulEvaluations);
-        Assert.Equal("Division durch null", session.DisplayResult);
+        Assert.Equal("Cannot divide by zero", session.DisplayResult);
         Assert.Empty(session.History);
     }
 
@@ -102,11 +121,35 @@ public sealed class CalculatorSessionTests
         Assert.True(session.History[0].IsMasked);
         Assert.False(session.History[1].IsMasked);
 
-        session.Unlock(PaywallPlan.OneTime);
+        session.Unlock(PaywallPlan.Annual);
 
         Assert.False(session.IsResultMasked);
         Assert.All(session.History, entry => Assert.False(entry.IsMasked));
-        Assert.Equal(PaywallPlan.OneTime, session.Paywall.State.Plan);
+        Assert.Equal(PaywallPlan.Annual, session.Paywall.State.Plan);
+    }
+
+    [Fact]
+    public void SingleCalculationPurchase_RevealsOnlyCurrentResult()
+    {
+        var session = CreateSession(out _);
+        for (var i = 0; i <= PaywallService.FreeEvaluations; i++)
+        {
+            Evaluate(session, "3*3");
+        }
+
+        Assert.True(session.IsResultMasked);
+        session.Unlock(PaywallPlan.SingleCalculation);
+
+        Assert.False(session.IsResultMasked);
+        Assert.False(session.History[0].IsMasked);
+        Assert.False(session.Paywall.State.IsUnlocked);
+        Assert.Equal(PaywallPlan.SingleCalculation, session.Paywall.State.Plan);
+
+        Evaluate(session, "4*4");
+
+        Assert.True(session.IsResultMasked);
+        Assert.True(session.History[0].IsMasked);
+        Assert.False(session.History[1].IsMasked);
     }
 
     [Fact]
@@ -119,7 +162,7 @@ public sealed class CalculatorSessionTests
             Evaluate(session, "5+5");
         }
 
-        session.Unlock(PaywallPlan.Subscription);
+        session.Unlock(PaywallPlan.Monthly);
         session.ResetDemo();
 
         Assert.Equal(0, store.State.SuccessfulEvaluations);

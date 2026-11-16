@@ -24,9 +24,9 @@ public sealed class PaywallUnlockAndResetTests : IDisposable
     }
 
     [Theory]
-    [InlineData(PaywallPlan.Subscription)]
-    [InlineData(PaywallPlan.OneTime)]
-    public void Unlock_AfterMaskedEvaluation_RevealsResult_AndPlanSurvivesReload(PaywallPlan plan)
+    [InlineData(PaywallPlan.Monthly)]
+    [InlineData(PaywallPlan.Annual)]
+    public void Unlock_AfterMaskedEvaluation_RevealsResult_UntilReload(PaywallPlan plan)
     {
         var service = new PaywallService(new JsonFilePaywallStateStore(_path));
         ExhaustFreeQuota(service);
@@ -42,15 +42,15 @@ public sealed class PaywallUnlockAndResetTests : IDisposable
 
         var reloaded = new PaywallService(new JsonFilePaywallStateStore(_path));
 
-        Assert.True(reloaded.State.IsUnlocked);
-        Assert.Equal(plan, reloaded.State.Plan);
+        Assert.False(reloaded.State.IsUnlocked);
+        Assert.Equal(PaywallPlan.None, reloaded.State.Plan);
         Assert.True(reloaded.IsResultVisible);
         Assert.Equal(PaywallService.FreeEvaluations + 2, reloaded.State.SuccessfulEvaluations);
     }
 
     [Theory]
-    [InlineData(PaywallPlan.Subscription)]
-    [InlineData(PaywallPlan.OneTime)]
+    [InlineData(PaywallPlan.Monthly)]
+    [InlineData(PaywallPlan.Annual)]
     public void Session_UnlockAfterMaskedResult_RevealsCurrentResultAndHistory(PaywallPlan plan)
     {
         var paywall = new PaywallService(new JsonFilePaywallStateStore(_path));
@@ -73,7 +73,8 @@ public sealed class PaywallUnlockAndResetTests : IDisposable
         var reloaded = new CalculatorSession(new PaywallService(new JsonFilePaywallStateStore(_path)));
 
         Assert.True(reloaded.Paywall.IsResultVisible);
-        Assert.Equal(plan, reloaded.Paywall.State.Plan);
+        Assert.False(reloaded.Paywall.State.IsUnlocked);
+        Assert.Equal(PaywallPlan.None, reloaded.Paywall.State.Plan);
     }
 
     [Fact]
@@ -81,7 +82,7 @@ public sealed class PaywallUnlockAndResetTests : IDisposable
     {
         var service = new PaywallService(new JsonFilePaywallStateStore(_path));
         ExhaustFreeQuota(service);
-        service.Unlock(PaywallPlan.Subscription);
+        service.Unlock(PaywallPlan.Monthly);
 
         Assert.True(service.State.IsUnlocked);
 
@@ -108,12 +109,12 @@ public sealed class PaywallUnlockAndResetTests : IDisposable
     }
 
     [Fact]
-    public void Session_ResetAfterPurchase_MasksTheNextNinthEvaluationAgain()
+    public void Session_ResetAfterPurchase_MasksAtTheTriggerAgain()
     {
         var paywall = new PaywallService(new JsonFilePaywallStateStore(_path));
         var session = new CalculatorSession(paywall);
         ExhaustFreeQuota(paywall);
-        session.Unlock(PaywallPlan.OneTime);
+        session.Unlock(PaywallPlan.Annual);
 
         session.ResetDemo();
 
@@ -131,11 +132,22 @@ public sealed class PaywallUnlockAndResetTests : IDisposable
         Assert.True(session.IsResultMasked);
     }
 
+    [Fact]
+    public void PremiumPercentCredits_AreClearedOnReload()
+    {
+        var service = new PaywallService(new JsonFilePaywallStateStore(_path));
+        service.PurchasePremiumPercentPack(PremiumPercentPack.Ten);
+        Assert.True(service.TryConsumePremiumPercentCredit());
+
+        var reloaded = new PaywallService(new JsonFilePaywallStateStore(_path));
+        Assert.Equal(0, reloaded.State.PremiumPercentCredits);
+    }
+
     private static void ExhaustFreeQuota(PaywallService service)
     {
         for (var evaluation = 1; evaluation <= PaywallService.FreeEvaluations; evaluation++)
         {
-            Assert.True(service.RegisterSuccessfulEvaluation(), $"Auswertung {evaluation} muss sichtbar sein.");
+            Assert.True(service.RegisterSuccessfulEvaluation(), $"Evaluation {evaluation} must remain visible.");
         }
 
         Assert.False(service.RegisterSuccessfulEvaluation());
