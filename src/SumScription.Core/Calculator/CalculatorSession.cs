@@ -2,22 +2,22 @@ using SumScription.Core.Paywall;
 
 namespace SumScription.Core.Calculator;
 
-/// <summary>Verbindet Rechenband, Verlauf und Demo-Paywall.</summary>
+/// <summary>Connects the calculator engine, history, and parody paywall.</summary>
 public sealed class CalculatorSession
 {
-    /// <summary>Höchstzahl der Einträge im Rechenband.</summary>
+    /// <summary>Maximum number of history entries.</summary>
     public const int HistoryCapacity = 20;
 
     private readonly CalculatorEngine _engine;
     private readonly List<HistoryEntry> _history = [];
 
-    /// <summary>Erzeugt eine Sitzung mit eigenem Rechenband.</summary>
+    /// <summary>Creates a session with a new calculator engine.</summary>
     public CalculatorSession(PaywallService paywall)
         : this(new CalculatorEngine(), paywall)
     {
     }
 
-    /// <summary>Erzeugt eine Sitzung mit übergebenem Rechenband.</summary>
+    /// <summary>Creates a session with the provided calculator engine.</summary>
     public CalculatorSession(CalculatorEngine engine, PaywallService paywall)
     {
         ArgumentNullException.ThrowIfNull(engine);
@@ -26,44 +26,49 @@ public sealed class CalculatorSession
         Paywall = paywall;
     }
 
-    /// <summary>Das Rechenband.</summary>
+    /// <summary>The calculator engine.</summary>
     public CalculatorEngine Engine => _engine;
 
-    /// <summary>Die Demo-Paywall.</summary>
+    /// <summary>The parody paywall.</summary>
     public PaywallService Paywall { get; }
 
-    /// <summary>Der sichtbare Ausdruck.</summary>
+    /// <summary>The visible expression.</summary>
     public string ExpressionText => _engine.ExpressionText;
 
-    /// <summary>Der sichtbare Eintrag bzw. das Ergebnis.</summary>
+    /// <summary>The visible entry or result.</summary>
     public string DisplayResult => _engine.DisplayResult;
 
-    /// <summary>Wahr, wenn ein Fehler angezeigt wird.</summary>
+    /// <summary>Whether an error is visible.</summary>
     public bool HasError => _engine.HasError;
 
-    /// <summary>Wahr, wenn das angezeigte Ergebnis verdeckt ist.</summary>
+    /// <summary>Whether the displayed result is masked.</summary>
     public bool IsResultMasked { get; private set; }
 
-    /// <summary>Der Verlauf, neueste Auswertung zuerst.</summary>
+    /// <summary>History with the newest evaluation first.</summary>
     public IReadOnlyList<HistoryEntry> History => _history;
 
-    /// <summary>Verarbeitet eine Ziffer.</summary>
+    /// <summary>Handles a digit.</summary>
     public void InputDigit(char digit)
     {
         _engine.InputDigit(digit);
         IsResultMasked = false;
     }
 
-    /// <summary>Verarbeitet Komma oder Punkt.</summary>
+    /// <summary>Handles a comma or period decimal separator.</summary>
     public void InputDecimalSeparator()
     {
         _engine.InputDecimalSeparator();
         IsResultMasked = false;
     }
 
-    /// <summary>Verarbeitet einen Operator.</summary>
+    /// <summary>Handles an operator.</summary>
     public bool InputOperator(char symbol)
     {
+        if (IsResultMasked)
+        {
+            return false;
+        }
+
         var accepted = _engine.InputOperator(symbol);
         if (accepted)
         {
@@ -73,42 +78,63 @@ public sealed class CalculatorSession
         return accepted;
     }
 
-    /// <summary>Wechselt das Vorzeichen.</summary>
+    /// <summary>Toggles the sign.</summary>
     public void ToggleSign()
     {
+        if (IsResultMasked)
+        {
+            return;
+        }
+
         _engine.ToggleSign();
         IsResultMasked = false;
     }
 
-    /// <summary>Teilt den Eintrag durch 100.</summary>
-    public void Percent()
+    /// <summary>Uses one premium credit and divides the entry by one hundred.</summary>
+    public bool TryPercent()
     {
+        if (IsResultMasked || _engine.HasError)
+        {
+            return false;
+        }
+
+        if (!Paywall.TryConsumePremiumPercentCredit())
+        {
+            return false;
+        }
+
         _engine.Percent();
         IsResultMasked = false;
+        return true;
     }
 
-    /// <summary>Löscht die letzte Ziffer.</summary>
+    /// <summary>Deletes the last digit.</summary>
     public void Backspace()
     {
+        if (IsResultMasked)
+        {
+            return;
+        }
+
         _engine.Backspace();
         IsResultMasked = false;
     }
 
-    /// <summary>Setzt den Eintrag auf 0.</summary>
+    /// <summary>Resets the current entry to zero.</summary>
     public void ClearEntry()
     {
         _engine.ClearEntry();
         IsResultMasked = false;
     }
 
-    /// <summary>Löscht Eintrag, Ausdruck und Fehler.</summary>
+    /// <summary>Clears the entry, expression, and error.</summary>
     public void ClearAll()
     {
         _engine.ClearAll();
         IsResultMasked = false;
     }
 
-    /// <summary>Wertet aus und zählt die Auswertung für die Demo-Paywall.</summary>
+    /// <summary>Evaluates and registers the result with the parody paywall.</summary>
     public bool Evaluate()
     {
         if (!_engine.Evaluate())
@@ -121,15 +147,26 @@ public sealed class CalculatorSession
         return true;
     }
 
-    /// <summary>Schaltet die Demo frei.</summary>
+    /// <summary>Fictionally unlocks result visibility.</summary>
     public void Unlock(PaywallPlan plan)
     {
         Paywall.Unlock(plan);
         IsResultMasked = false;
+
+        if (plan == PaywallPlan.SingleCalculation)
+        {
+            if (_history.Count > 0 && _history[0].IsMasked)
+            {
+                _history[0] = _history[0] with { IsMasked = false };
+            }
+
+            return;
+        }
+
         RefreshHistoryMasks();
     }
 
-    /// <summary>Setzt die Demo zurück.</summary>
+    /// <summary>Resets local parody state.</summary>
     public void ResetDemo()
     {
         Paywall.Reset();
