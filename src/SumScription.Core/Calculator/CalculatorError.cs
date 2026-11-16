@@ -1,27 +1,27 @@
 namespace SumScription.Core.Calculator;
 
-/// <summary>Fehlerzustände der Auswertung.</summary>
+/// <summary>Calculator evaluation errors.</summary>
 public enum CalculatorError
 {
-    /// <summary>Kein Fehler.</summary>
+    /// <summary>No error.</summary>
     None,
 
-    /// <summary>Division durch null.</summary>
+    /// <summary>Division by zero.</summary>
     DivisionByZero,
 
-    /// <summary>Wertebereich von <see cref="decimal"/> überschritten.</summary>
+    /// <summary>The <see cref="decimal"/> range was exceeded.</summary>
     Overflow,
 }
 
-/// <summary>Sichtbare deutsche Texte der Fehlerzustände.</summary>
+/// <summary>User-facing text for calculator errors.</summary>
 public static class CalculatorErrorText
 {
-    /// <summary>Liefert den Anzeigetext zu einem Fehlerzustand.</summary>
+    /// <summary>Returns the display text for an error.</summary>
     public static string ToDisplayText(this CalculatorError error) => error switch
     {
         CalculatorError.None => string.Empty,
-        CalculatorError.DivisionByZero => "Division durch null",
-        CalculatorError.Overflow => "Zahl zu groß",
-        _ => throw new ArgumentOutOfRangeException(nameof(error), error, "Unbekannter Fehler."),
+        CalculatorError.DivisionByZero => "Cannot divide by zero",
+        CalculatorError.Overflow => "Number too large",
+        _ => throw new ArgumentOutOfRangeException(nameof(error), error, "Unknown error."),
     };
 }

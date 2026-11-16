@@ -1,6 +1,6 @@
 namespace SumScription.Core.Calculator;
 
-/// <summary>Die vier im Rechenband erlaubten Verknüpfungen.</summary>
+/// <summary>The four supported calculator operators.</summary>
 public enum CalculatorOperator
 {
     /// <summary>Addition.</summary>
@@ -16,29 +16,29 @@ public enum CalculatorOperator
     Divide,
 }
 
-/// <summary>Darstellung und Erkennung der Operatoren.</summary>
+/// <summary>Operator display and parsing.</summary>
 public static class CalculatorOperators
 {
-    /// <summary>Zeichen für das Minus im Ausdruck (U+2212).</summary>
+    /// <summary>Display minus sign (U+2212).</summary>
     public const char MinusSign = '\u2212';
 
-    /// <summary>Zeichen für die Multiplikation im Ausdruck (U+00D7).</summary>
+    /// <summary>Display multiplication sign (U+00D7).</summary>
     public const char MultiplicationSign = '\u00D7';
 
-    /// <summary>Zeichen für die Division im Ausdruck (U+00F7).</summary>
+    /// <summary>Display division sign (U+00F7).</summary>
     public const char DivisionSign = '\u00F7';
 
-    /// <summary>Liefert das Anzeigezeichen des Operators.</summary>
+    /// <summary>Returns the display symbol for an operator.</summary>
     public static string ToSymbol(this CalculatorOperator op) => op switch
     {
         CalculatorOperator.Add => "+",
         CalculatorOperator.Subtract => MinusSign.ToString(),
         CalculatorOperator.Multiply => MultiplicationSign.ToString(),
         CalculatorOperator.Divide => DivisionSign.ToString(),
-        _ => throw new ArgumentOutOfRangeException(nameof(op), op, "Unbekannter Operator."),
+        _ => throw new ArgumentOutOfRangeException(nameof(op), op, "Unknown operator."),
     };
 
-    /// <summary>Erkennt Anzeige- und Tastaturzeichen eines Operators.</summary>
+    /// <summary>Parses display and keyboard symbols for an operator.</summary>
     public static bool TryParse(char symbol, out CalculatorOperator op)
     {
         switch (symbol)

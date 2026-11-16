@@ -2,7 +2,7 @@ using System.Text;
 
 namespace SumScription.Core.Calculator;
 
-/// <summary>Zustandsmaschine des Rechenbands: Eintrag, Ausdruck, Fehler.</summary>
+/// <summary>State machine for calculator entry, expression, result, and error.</summary>
 public sealed class CalculatorEngine
 {
     private const string ZeroEntry = "0";
@@ -25,7 +25,7 @@ public sealed class CalculatorEngine
         Error,
     }
 
-    /// <summary>Der sichtbare Ausdruck, z. B. <c>1 + 2 × 3</c>.</summary>
+    /// <summary>The visible expression, for example <c>1 + 2 × 3</c>.</summary>
     public string ExpressionText
     {
         get
@@ -44,7 +44,7 @@ public sealed class CalculatorEngine
         }
     }
 
-    /// <summary>Der sichtbare Eintrag bzw. das Ergebnis der letzten Auswertung.</summary>
+    /// <summary>The visible entry or most recent result.</summary>
     public string DisplayResult => _phase switch
     {
         Phase.ShowingResult => NumberFormatter.Format(_result),
@@ -52,27 +52,27 @@ public sealed class CalculatorEngine
         _ => _entry,
     };
 
-    /// <summary>Der Fehlerzustand, sonst <see cref="CalculatorError.None"/>.</summary>
+    /// <summary>The current error, or <see cref="CalculatorError.None"/>.</summary>
     public CalculatorError Error => _phase == Phase.Error ? _error : CalculatorError.None;
 
-    /// <summary>Wahr, wenn ein Fehler angezeigt wird.</summary>
+    /// <summary>Whether an error is visible.</summary>
     public bool HasError => _phase == Phase.Error;
 
-    /// <summary>Wahr, wenn die Ergebniszeile das letzte Ergebnis zeigt.</summary>
+    /// <summary>Whether the result line shows the most recent evaluation.</summary>
     public bool IsShowingResult => _phase == Phase.ShowingResult;
 
-    /// <summary>Wahr, wenn der Eintrag leer ist (direkt nach einem Operator).</summary>
+    /// <summary>Whether the entry is blank directly after an operator.</summary>
     public bool IsEntryBlank => _entryBlank;
 
-    /// <summary>Der aktuelle Eintrag als Zahl.</summary>
+    /// <summary>The current entry as a number.</summary>
     public decimal EntryValue => _phase == Phase.ShowingResult ? _result : NumberFormatter.ParseEntry(_entry);
 
-    /// <summary>Verarbeitet eine Ziffer 0–9.</summary>
+    /// <summary>Handles one digit from zero through nine.</summary>
     public void InputDigit(char digit)
     {
         if (!char.IsAsciiDigit(digit))
         {
-            throw new ArgumentOutOfRangeException(nameof(digit), digit, "Nur Ziffern 0–9.");
+            throw new ArgumentOutOfRangeException(nameof(digit), digit, "Only digits 0–9 are supported.");
         }
 
         if (_phase != Phase.Typing)
@@ -83,7 +83,7 @@ public sealed class CalculatorEngine
         AppendDigit(digit);
     }
 
-    /// <summary>Verarbeitet Komma oder Punkt; beide erzeugen genau ein Komma.</summary>
+    /// <summary>Handles a comma or period; both create one display separator.</summary>
     public void InputDecimalSeparator()
     {
         if (_phase == Phase.Error)
@@ -111,7 +111,7 @@ public sealed class CalculatorEngine
         }
     }
 
-    /// <summary>Verarbeitet <c>+</c>, <c>-</c>, <c>*</c>, <c>/</c> und deren Anzeigezeichen.</summary>
+    /// <summary>Handles <c>+</c>, <c>-</c>, <c>*</c>, <c>/</c>, and their display symbols.</summary>
     public bool InputOperator(char symbol)
     {
         if (!CalculatorOperators.TryParse(symbol, out var op))
@@ -144,7 +144,7 @@ public sealed class CalculatorEngine
         return true;
     }
 
-    /// <summary>Wechselt das Vorzeichen des Eintrags.</summary>
+    /// <summary>Toggles the sign of the current entry.</summary>
     public void ToggleSign()
     {
         if (_phase == Phase.Error)
@@ -174,7 +174,7 @@ public sealed class CalculatorEngine
             : "-" + _entry;
     }
 
-    /// <summary>Teilt den Eintrag durch 100.</summary>
+    /// <summary>Divides the current entry by one hundred.</summary>
     public void Percent()
     {
         if (_phase == Phase.Error)
@@ -194,7 +194,7 @@ public sealed class CalculatorEngine
         _hasUserInput |= value != 0m;
     }
 
-    /// <summary>Löscht die letzte Ziffer des Eintrags.</summary>
+    /// <summary>Deletes the last digit of the current entry.</summary>
     public void Backspace()
     {
         if (_phase != Phase.Typing || _entryBlank)
@@ -216,8 +216,8 @@ public sealed class CalculatorEngine
     }
 
     /// <summary>
-    /// Setzt den Eintrag auf 0, der Ausdruck bleibt stehen. Nach einem Ergebnis beginnt
-    /// stattdessen ein neuer Eintrag, weil das Ergebnis den Ausdruck abgeschlossen hat.
+    /// Resets the entry to zero while keeping the expression. After a result, it starts
+    /// a new entry because the previous result completed the expression.
     /// </summary>
     public void ClearEntry()
     {
@@ -236,7 +236,7 @@ public sealed class CalculatorEngine
         _entryBlank = false;
     }
 
-    /// <summary>Löscht Eintrag, Ausdruck und Fehlerzustand.</summary>
+    /// <summary>Clears the entry, expression, and error state.</summary>
     public void ClearAll()
     {
         StartNewExpression();
@@ -245,8 +245,8 @@ public sealed class CalculatorEngine
     }
 
     /// <summary>
-    /// Wertet den Ausdruck aus. Liefert <c>false</c> bei Fehler, wenn bereits ein Ergebnis
-    /// angezeigt wird oder wenn noch keine Eingabe erfolgt ist.
+    /// Evaluates the expression. Returns <c>false</c> on error, when a result is already
+    /// visible, or when no input has been provided.
     /// </summary>
     public bool Evaluate()
     {

@@ -1,11 +1,11 @@
 namespace SumScription.Core.Calculator;
 
-/// <summary>Wertet eine Operanden-/Operatorfolge mit Punkt-vor-Strich aus.</summary>
+/// <summary>Evaluates operand and operator sequences using standard precedence.</summary>
 public static class ExpressionEvaluator
 {
     /// <summary>
-    /// Wertet die Folge aus. <paramref name="operands"/> muss genau ein Element mehr
-    /// enthalten als <paramref name="operators"/>.
+    /// Evaluates the sequence. <paramref name="operands"/> must contain exactly one more item
+    /// than <paramref name="operators"/>.
     /// </summary>
     public static bool TryEvaluate(
         IReadOnlyList<decimal> operands,
@@ -26,7 +26,7 @@ public static class ExpressionEvaluator
 
         if (operands.Count != operators.Count + 1)
         {
-            throw new ArgumentException("Zu jedem Operator gehört genau eine rechte Zahl.", nameof(operators));
+            throw new ArgumentException("Every operator requires exactly one right-hand operand.", nameof(operators));
         }
 
         try
@@ -60,7 +60,7 @@ public static class ExpressionEvaluator
                         term /= next;
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(operators), "Unbekannter Operator.");
+                        throw new ArgumentOutOfRangeException(nameof(operators), "Unknown operator.");
                 }
             }
 

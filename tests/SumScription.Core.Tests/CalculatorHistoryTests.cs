@@ -57,9 +57,10 @@ public sealed class CalculatorHistoryTests
 
     private static CalculatorSession CreateUnlockedSession()
     {
-        // Freigeschaltet, damit die Verlaufsgrenze unabhängig vom Freikontingent prüfbar bleibt.
-        var store = new FakePaywallStateStore { State = new PaywallState(0, true, PaywallPlan.OneTime) };
-        return new CalculatorSession(new PaywallService(store));
+        // Unlock results so the history limit can be tested independently of the free quota.
+        var service = new PaywallService(new FakePaywallStateStore());
+        service.Unlock(PaywallPlan.Annual);
+        return new CalculatorSession(service);
     }
 
     private static bool Evaluate(CalculatorSession session, string input)

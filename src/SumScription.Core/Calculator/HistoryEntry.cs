@@ -1,7 +1,7 @@
 namespace SumScription.Core.Calculator;
 
-/// <summary>Eine Zeile des Rechenbands.</summary>
-/// <param name="Expression">Der ausgewertete Ausdruck.</param>
-/// <param name="Value">Das Ergebnis als Anzeigetext.</param>
-/// <param name="IsMasked">Wahr, wenn das Ergebnis von der Demo-Paywall verdeckt ist.</param>
+/// <summary>One calculator history row.</summary>
+/// <param name="Expression">The evaluated expression.</param>
+/// <param name="Value">The result as display text.</param>
+/// <param name="IsMasked">Whether the parody paywall masks the result.</param>
 public sealed record HistoryEntry(string Expression, string Value, bool IsMasked);

@@ -2,13 +2,13 @@ using System.Globalization;
 
 namespace SumScription.Core.Calculator;
 
-/// <summary>Das eine Zahlenformat der App: deutsch, ohne Exponent, ohne Tausendertrenner.</summary>
+/// <summary>The app's number format: German decimal separator, no exponent or grouping.</summary>
 public static class NumberFormatter
 {
-    /// <summary>Höchstzahl signifikanter Stellen für Eintrag und Ergebnis.</summary>
+    /// <summary>Maximum significant digits for entries and results.</summary>
     public const int SignificantDigits = 15;
 
-    /// <summary>Dezimaltrennzeichen der Anzeige.</summary>
+    /// <summary>Display decimal separator.</summary>
     public const string Separator = ",";
 
     private const int MaxScale = 28;
@@ -17,7 +17,7 @@ public static class NumberFormatter
 
     private static readonly CultureInfo InvariantCulture = CultureInfo.InvariantCulture;
 
-    /// <summary>Formatiert einen Wert mit höchstens 15 signifikanten Stellen.</summary>
+    /// <summary>Formats a value with at most fifteen significant digits.</summary>
     public static string Format(decimal value)
     {
         var rounded = RoundToSignificantDigits(value, SignificantDigits);
@@ -29,7 +29,7 @@ public static class NumberFormatter
         return rounded.ToString("0.###############################", DisplayCulture);
     }
 
-    /// <summary>Rundet auf die angegebene Zahl signifikanter Stellen.</summary>
+    /// <summary>Rounds to the requested number of significant digits.</summary>
     public static decimal RoundToSignificantDigits(decimal value, int digits)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(digits, 1);
@@ -119,7 +119,7 @@ public static class NumberFormatter
         return factor;
     }
 
-    /// <summary>Parst einen Eintrag der Anzeige (Komma oder Punkt) oder liefert 0.</summary>
+    /// <summary>Parses a display entry containing a comma or period, or returns zero.</summary>
     public static decimal ParseEntry(string? entry)
     {
         if (string.IsNullOrWhiteSpace(entry))

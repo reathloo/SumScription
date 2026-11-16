@@ -271,7 +271,7 @@ public sealed class CalculatorEdgeCaseTests
 
         Assert.True(engine.HasError);
         Assert.Equal(CalculatorError.DivisionByZero, engine.Error);
-        Assert.Equal("Division durch null", engine.DisplayResult);
+        Assert.Equal("Cannot divide by zero", engine.DisplayResult);
         Assert.Equal("1 ÷ 0", engine.ExpressionText);
 
         engine.ClearAll();

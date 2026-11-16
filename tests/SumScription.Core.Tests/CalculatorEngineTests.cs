@@ -64,7 +64,7 @@ public sealed class CalculatorEngineTests
 
         Assert.False(engine.Evaluate());
         Assert.True(engine.HasError);
-        Assert.Equal("Division durch null", engine.DisplayResult);
+        Assert.Equal("Cannot divide by zero", engine.DisplayResult);
         Assert.Equal("1 ÷ 0", engine.ExpressionText);
 
         engine.InputDigit('5');
@@ -129,7 +129,7 @@ public sealed class CalculatorEngineTests
 
         Assert.False(engine.Evaluate());
         Assert.True(engine.HasError);
-        Assert.Equal("Zahl zu groß", engine.DisplayResult);
+        Assert.Equal("Number too large", engine.DisplayResult);
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public sealed class CalculatorEngineTests
         engine.InputOperator('+');
 
         Assert.True(engine.HasError);
-        Assert.Equal("Division durch null", engine.DisplayResult);
+        Assert.Equal("Cannot divide by zero", engine.DisplayResult);
     }
 
     [Fact]
