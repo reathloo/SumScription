@@ -2,13 +2,13 @@ using System.Windows.Input;
 
 namespace SumScription.App.ViewModels;
 
-/// <summary>Minimale ICommand-Umsetzung ohne MVVM-Framework.</summary>
+/// <summary>Minimal ICommand implementation without an MVVM framework.</summary>
 public sealed class RelayCommand : ICommand
 {
     private readonly Action<object?> _execute;
     private readonly Func<object?, bool>? _canExecute;
 
-    /// <summary>Erzeugt ein Kommando.</summary>
+    /// <summary>Creates a command.</summary>
     public RelayCommand(Action<object?> execute, Func<object?, bool>? canExecute = null)
     {
         ArgumentNullException.ThrowIfNull(execute);
@@ -25,6 +25,6 @@ public sealed class RelayCommand : ICommand
     /// <inheritdoc />
     public void Execute(object? parameter) => _execute(parameter);
 
-    /// <summary>Meldet geänderte Ausführbarkeit.</summary>
+    /// <summary>Notifies listeners that executability changed.</summary>
     public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }

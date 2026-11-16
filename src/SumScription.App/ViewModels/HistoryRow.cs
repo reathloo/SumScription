@@ -1,12 +1,12 @@
 namespace SumScription.App.ViewModels;
 
-/// <summary>Eine Zeile des Rechenbands in der Anzeige.</summary>
+/// <summary>One calculator history row in the UI.</summary>
 public sealed class HistoryRow
 {
-    /// <summary>Platzhalter für ein verdecktes Ergebnis.</summary>
+    /// <summary>Placeholder for a masked result.</summary>
     public const string MaskedResult = "• • • •";
 
-    /// <summary>Erzeugt eine Zeile.</summary>
+    /// <summary>Creates a history row.</summary>
     public HistoryRow(string expression, string result, bool isMasked, double opacity)
     {
         Expression = expression;
@@ -15,21 +15,21 @@ public sealed class HistoryRow
         Opacity = opacity;
     }
 
-    /// <summary>Der ausgewertete Ausdruck.</summary>
+    /// <summary>The evaluated expression.</summary>
     public string Expression { get; }
 
-    /// <summary>Das Ergebnis, unmaskiert.</summary>
+    /// <summary>The unmasked result.</summary>
     public string Result { get; }
 
-    /// <summary>Das sichtbare Ergebnis.</summary>
+    /// <summary>The visible result.</summary>
     public string ResultText => IsMasked ? MaskedResult : Result;
 
-    /// <summary>Wahr, wenn das Ergebnis verdeckt ist.</summary>
+    /// <summary>Whether the result is masked.</summary>
     public bool IsMasked { get; }
 
-    /// <summary>Deckkraft der Zeile (ältere Zeilen sind schwächer).</summary>
+    /// <summary>Row opacity; older rows are dimmer.</summary>
     public double Opacity { get; }
 
-    /// <summary>Sprechendname für Screenreader.</summary>
-    public string AutomationName => $"{Expression} gleich {ResultText}";
+    /// <summary>Accessible name for screen readers.</summary>
+    public string AutomationName => $"{Expression} equals {ResultText}";
 }

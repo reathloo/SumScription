@@ -6,7 +6,7 @@ using SumScription.Core.Paywall;
 
 namespace SumScription.App.ViewModels;
 
-/// <summary>Dünne Steuerung über <see cref="CalculatorSession"/>: Anzeige, Overlays, Kommandos.</summary>
+/// <summary>Coordinates calculator display, overlays, commands, and parody purchases.</summary>
 public sealed class MainWindowViewModel : INotifyPropertyChanged
 {
     private const int FadedHistoryRows = 5;
@@ -18,13 +18,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private bool _isPaywallVisible;
     private bool _isCheckoutVisible;
     private int _paywallDismissalStep;
-    private PaywallPlan _selectedPlan = PaywallPlan.Subscription;
+    private PaywallReason _paywallReason;
+    private bool _pendingPercent;
+    private bool _showAnnualPlans;
+    private PaywallPlan _selectedPlan = PaywallPlan.Monthly;
+    private PremiumPercentPack _selectedPremiumPercentPack = PremiumPercentPack.Ten;
     private string _expressionText = string.Empty;
     private string _displayResult = "0";
+    private string _purchaseCelebrationText = "PREMIUM ARITHMETIC ACQUIRED ✨";
     private bool _hasError;
     private bool _isResultMasked;
 
-    /// <summary>Erzeugt das ViewModel für eine Sitzung.</summary>
+    /// <summary>Creates the view model for a calculator session.</summary>
     public MainWindowViewModel(CalculatorSession session)
     {
         ArgumentNullException.ThrowIfNull(session);
@@ -35,126 +40,177 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         OperatorCommand = new RelayCommand(parameter => RunOperator(AsText(parameter)));
         EqualsCommand = new RelayCommand(_ => Evaluate());
         ToggleSignCommand = new RelayCommand(_ => Run(_session.ToggleSign));
-        PercentCommand = new RelayCommand(_ => Run(_session.Percent));
+        PercentCommand = new RelayCommand(_ => Percent());
         BackspaceCommand = new RelayCommand(_ => Run(_session.Backspace));
         ClearEntryCommand = new RelayCommand(_ => Run(_session.ClearEntry));
         ClearAllCommand = new RelayCommand(_ => Run(_session.ClearAll));
         OpenPaywallCommand = new RelayCommand(_ => OpenPaywall());
-        ClosePaywallCommand = new RelayCommand(_ => ClosePaywall());
         SelectPlanCommand = new RelayCommand(parameter => SelectPlan(AsText(parameter)));
+        ShowMonthlyPlansCommand = new RelayCommand(_ => ShowAnnualPlans(false));
+        ShowAnnualPlansCommand = new RelayCommand(_ => ShowAnnualPlans(true));
+        SelectPremiumPercentPackCommand = new RelayCommand(parameter => SelectPremiumPercentPack(AsText(parameter)));
         ConfirmPurchaseCommand = new RelayCommand(_ => ConfirmPurchase());
         CancelPurchaseCommand = new RelayCommand(_ => CancelCheckout());
 
         Refresh();
     }
 
-    /// <summary>Ein Ergebnis ist erschienen.</summary>
+    /// <summary>A result appeared.</summary>
     public event EventHandler? Evaluated;
 
-    /// <summary>Ein Fehler ist erschienen.</summary>
+    /// <summary>An error appeared.</summary>
     public event EventHandler? ErrorAppeared;
 
-    /// <summary>Das Preisblatt wurde geöffnet.</summary>
+    /// <summary>The parody paywall opened.</summary>
     public event EventHandler? PaywallOpened;
 
-    /// <summary>Die Parodie-Paywall hat die nächste Ablehnungsstufe erreicht.</summary>
+    /// <summary>The parody paywall advanced to its next refusal stage.</summary>
     public event EventHandler? PaywallDismissalAdvanced;
 
-    /// <summary>Der Kaufdialog wurde geöffnet.</summary>
+    /// <summary>The fictional checkout opened.</summary>
     public event EventHandler? CheckoutOpened;
 
-    /// <summary>Alle Overlays sind geschlossen.</summary>
+    /// <summary>All overlays closed.</summary>
     public event EventHandler? OverlaysClosed;
 
-    /// <summary>Der Kaufdialog wurde geschlossen.</summary>
+    /// <summary>The fictional checkout closed.</summary>
     public event EventHandler? CheckoutClosed;
+
+    /// <summary>A fictional purchase completed and should be celebrated.</summary>
+    public event EventHandler? PurchaseCompleted;
 
     /// <inheritdoc />
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    /// <summary>Ziffernkommando, Parameter ist die Ziffer.</summary>
+    /// <summary>Digit command whose parameter is the digit.</summary>
     public RelayCommand DigitCommand { get; }
 
-    /// <summary>Dezimaltrennzeichen.</summary>
+    /// <summary>Decimal-separator command.</summary>
     public RelayCommand SeparatorCommand { get; }
 
-    /// <summary>Operatorkommando (+, -, *, / oder Anzeigezeichen).</summary>
+    /// <summary>Operator command for +, -, *, /, or display symbols.</summary>
     public RelayCommand OperatorCommand { get; }
 
-    /// <summary>Gleichheitszeichen.</summary>
+    /// <summary>Equals command.</summary>
     public RelayCommand EqualsCommand { get; }
 
-    /// <summary>Vorzeichenwechsel.</summary>
+    /// <summary>Sign-toggle command.</summary>
     public RelayCommand ToggleSignCommand { get; }
 
-    /// <summary>Prozent.</summary>
+    /// <summary>Premium percentage operation.</summary>
     public RelayCommand PercentCommand { get; }
 
-    /// <summary>Rücktaste.</summary>
+    /// <summary>Backspace command.</summary>
     public RelayCommand BackspaceCommand { get; }
 
-    /// <summary>Eintrag löschen.</summary>
+    /// <summary>Clear-entry command.</summary>
     public RelayCommand ClearEntryCommand { get; }
 
-    /// <summary>Alles löschen.</summary>
+    /// <summary>Clear-all command.</summary>
     public RelayCommand ClearAllCommand { get; }
 
-    /// <summary>Preisblatt öffnen.</summary>
+    /// <summary>Opens the result paywall.</summary>
     public RelayCommand OpenPaywallCommand { get; }
 
-    /// <summary>Preisblatt schließen.</summary>
-    public RelayCommand ClosePaywallCommand { get; }
-
-    /// <summary>Tarif wählen, Parameter ist <see cref="PaywallPlan"/> als Text.</summary>
+    /// <summary>Selects a result-unlock plan from its enum name.</summary>
     public RelayCommand SelectPlanCommand { get; }
 
-    /// <summary>Demo-Kauf bestätigen.</summary>
+    /// <summary>Shows the monthly result offers.</summary>
+    public RelayCommand ShowMonthlyPlansCommand { get; }
+
+    /// <summary>Shows the annual result offers.</summary>
+    public RelayCommand ShowAnnualPlansCommand { get; }
+
+    /// <summary>Selects a premium percentage pack from its enum name.</summary>
+    public RelayCommand SelectPremiumPercentPackCommand { get; }
+
+    /// <summary>Confirms a fictional purchase.</summary>
     public RelayCommand ConfirmPurchaseCommand { get; }
 
-    /// <summary>Kauf abbrechen.</summary>
+    /// <summary>Cancels fictional checkout.</summary>
     public RelayCommand CancelPurchaseCommand { get; }
 
-    /// <summary>Der sichtbare Ausdruck.</summary>
+    /// <summary>The visible expression.</summary>
     public string ExpressionText
     {
         get => _expressionText;
         private set => SetField(ref _expressionText, value);
     }
 
-    /// <summary>Der sichtbare Eintrag bzw. das Ergebnis.</summary>
+    /// <summary>The visible entry or result.</summary>
     public string DisplayResult
     {
         get => _displayResult;
         private set => SetField(ref _displayResult, value);
     }
 
-    /// <summary>Wahr, wenn ein Fehler angezeigt wird.</summary>
+    /// <summary>Whether an error is visible.</summary>
     public bool HasError
     {
         get => _hasError;
         private set => SetField(ref _hasError, value);
     }
 
-    /// <summary>Wahr, wenn das Ergebnis verdeckt ist.</summary>
+    /// <summary>Whether the result is masked.</summary>
     public bool IsResultMasked
     {
         get => _isResultMasked;
         private set => SetField(ref _isResultMasked, value);
     }
 
-    /// <summary>Der zuletzt gewählte Tarif.</summary>
+    /// <summary>The selected result-unlock plan.</summary>
     public PaywallPlan SelectedPlan => _selectedPlan;
 
-    /// <summary>Wahr, wenn die Demo freigeschaltet ist.</summary>
+    /// <summary>Whether the monthly result offers are active.</summary>
+    public bool IsMonthlyPlans => !_showAnnualPlans;
+
+    /// <summary>Whether the annual result offers are active.</summary>
+    public bool IsAnnualPlans => _showAnnualPlans;
+
+    /// <summary>Opacity for the preloaded monthly offer group.</summary>
+    public double MonthlyPlansOpacity => IsMonthlyPlans ? 1d : 0d;
+
+    /// <summary>Opacity for the preloaded annual offer group.</summary>
+    public double AnnualPlansOpacity => IsAnnualPlans ? 1d : 0d;
+
+    /// <summary>The selected premium percentage pack.</summary>
+    public PremiumPercentPack SelectedPremiumPercentPack => _selectedPremiumPercentPack;
+
+    /// <summary>Whether the result paywall is fictionally unlocked.</summary>
     public bool IsUnlocked => _session.Paywall.State.IsUnlocked;
 
-    /// <summary>Wahr, wenn die automatisch gezeigte Paywall danach erneut geöffnet werden darf.</summary>
+    /// <summary>Unused premium percentage calculations.</summary>
+    public int PremiumPercentCredits => _session.Paywall.State.PremiumPercentCredits;
+
+    /// <summary>Confirmation shown after a fictional purchase.</summary>
+    public string PurchaseCelebrationText
+    {
+        get => _purchaseCelebrationText;
+        private set => SetField(ref _purchaseCelebrationText, value);
+    }
+
+    /// <summary>Whether the result paywall can be reopened after its first appearance.</summary>
     public bool CanReopenPaywall => _paywallShownThisRun && !IsUnlocked;
 
-    /// <summary>Barrierefreier Name der Ergebniszeile; maskiert gibt er den Wert nicht preis.</summary>
-    public string ResultAutomationName => IsResultMasked ? "Ergebnis verdeckt" : "Ergebnis";
+    /// <summary>Whether the edge shop icon can be shown without competing with an overlay.</summary>
+    public bool IsShopIconVisible => CanReopenPaywall && !IsOverlayOpen;
 
-    /// <summary>Wahr, wenn das Preisblatt sichtbar ist.</summary>
+    /// <summary>Accessible result name that never leaks a masked value.</summary>
+    public string ResultAutomationName => IsResultMasked ? "Result hidden" : "Result";
+
+    /// <summary>Whether the current overlay sells percentage credits.</summary>
+    public bool IsPremiumPercentPaywall => _paywallReason == PaywallReason.PremiumPercent;
+
+    /// <summary>Whether the current overlay sells the result unlock.</summary>
+    public bool IsResultPaywall => !IsPremiumPercentPaywall;
+
+    /// <summary>Opacity for the preloaded premium percentage offers.</summary>
+    public double PremiumPercentOfferOpacity => IsPremiumPercentPaywall ? 1d : 0d;
+
+    /// <summary>Opacity for the preloaded result offers.</summary>
+    public double ResultOfferOpacity => IsResultPaywall ? 1d : 0d;
+
+    /// <summary>Whether the paywall is visible.</summary>
     public bool IsPaywallVisible
     {
         get => _isPaywallVisible;
@@ -162,12 +218,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             if (SetField(ref _isPaywallVisible, value))
             {
+                RaisePropertyChanged(nameof(PaywallOpacity));
                 RaisePropertyChanged(nameof(IsOverlayOpen));
+                RaisePropertyChanged(nameof(IsShopIconVisible));
             }
         }
     }
 
-    /// <summary>Wahr, wenn der Kaufdialog sichtbar ist.</summary>
+    /// <summary>Opacity used to keep the paywall preloaded without accepting input.</summary>
+    public double PaywallOpacity => IsPaywallVisible ? 1d : 0d;
+
+    /// <summary>Whether fictional checkout is visible.</summary>
     public bool IsCheckoutVisible
     {
         get => _isCheckoutVisible;
@@ -176,66 +237,93 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             if (SetField(ref _isCheckoutVisible, value))
             {
                 RaisePropertyChanged(nameof(IsOverlayOpen));
+                RaisePropertyChanged(nameof(IsShopIconVisible));
             }
         }
     }
 
-    /// <summary>Wahr, wenn ein Overlay die Tastatur abfängt.</summary>
+    /// <summary>Whether an overlay currently captures keyboard input.</summary>
     public bool IsOverlayOpen => IsPaywallVisible || IsCheckoutVisible;
 
-    /// <summary>Überschrift der aktuellen, absichtlich übertriebenen Ablehnungsstufe.</summary>
-    public string PaywallTitle => _paywallDismissalStep switch
+    /// <summary>Banner copy for the current parody offer.</summary>
+    public string PaywallBanner => IsPremiumPercentPaywall
+        ? "⚡ BREAKING: THE % SIGN HAS A PRICE ⚡"
+        : "⚡ TODAY ONLY: THE WORLD'S MOST EXPENSIVE ANSWER ⚡";
+
+    /// <summary>Headline for the current refusal stage.</summary>
+    public string PaywallTitle => (IsPremiumPercentPaywall, _paywallDismissalStep) switch
     {
-        1 => "Moment. Wirklich sicher?",
-        2 => "Wir fragen ein letztes Mal.*",
-        _ => "Dein Ergebnis ist fertig.",
+        (true, 1) => "Wait. You would divide by 100 for free?",
+        (true, 2) => "Final offer. Probably.*",
+        (true, _) => "Percent is a premium feature.",
+        (false, 1) => "Wait. Are you financially sure?",
+        (false, 2) => "We will ask one final time.*",
+        _ => "Your answer is ready.",
     };
 
-    /// <summary>Begleittext der aktuellen Ablehnungsstufe.</summary>
-    public string PaywallMessage => _paywallDismissalStep switch
+    /// <summary>Supporting copy for the current refusal stage.</summary>
+    public string PaywallMessage => (IsPremiumPercentPaywall, _paywallDismissalStep) switch
     {
-        1 => "Ohne Pro bleibt dieses Ergebnis leider emotional verschlossen.",
-        2 => "*Das war gelogen. Danach darfst du aber wirklich weiterrechnen.",
-        _ => "Aber offenbar gehört die Antwort jetzt unserem Premium-Team.",
+        (true, 1) => "That tiny symbol represents decades of imaginary research and development.",
+        (true, 2) => "*That was a lie. You may return to ordinary arithmetic after this.",
+        (true, _) => "Advanced mathematics deserves an advanced invoice.",
+        (false, 1) => "Without Pro, this result remains emotionally unavailable.",
+        (false, 2) => "*That was a lie. You may actually continue after this.",
+        _ => "Unfortunately, the answer now belongs to our Premium Results Department.",
     };
 
-    /// <summary>Text des Ablehnen-Knopfs.</summary>
-    public string PaywallCloseText => _paywallDismissalStep switch
+    /// <summary>Alternating text for the refusal button.</summary>
+    public string PaywallCloseText => (IsPremiumPercentPaywall, _paywallDismissalStep) switch
     {
-        1 => "Ja. Wirklich ablehnen",
-        2 => "Letzte Chance ignorieren",
-        _ => "Nein danke",
+        (true, 1) => "I reject premium division",
+        (true, 2) => "Keep my percentage locked",
+        (true, _) => "No, I can divide manually",
+        (false, 1) => "Yes, reject this incredible value",
+        (false, 2) => "Ignore the final final offer",
+        _ => "No thanks, I dislike answers",
     };
 
-    /// <summary>Transparenter Hinweis darauf, wie oft die Parodie noch abgelehnt werden muss.</summary>
-    public string PaywallDismissalHint
-    {
-        get
-        {
-            var remaining = 3 - _paywallDismissalStep;
-            return remaining == 1
-                ? "Noch 1 Ablehnung bis zurück zum Rechner"
-                : $"Noch {remaining} Ablehnungen bis zurück zum Rechner";
-        }
-    }
-
-    /// <summary>Die Zeilen des Rechenbands, neueste zuerst.</summary>
+    /// <summary>History rows, newest first.</summary>
     public ObservableCollection<HistoryRow> History => _history;
 
-    /// <summary>Wahr, wenn der Verlauf leer ist.</summary>
+    /// <summary>Whether history is empty.</summary>
     public bool IsHistoryEmpty => _history.Count == 0;
 
-    /// <summary>Tarifzeile im Kaufdialog.</summary>
-    public string CheckoutPlanLine => _selectedPlan == PaywallPlan.OneTime
-        ? "Lebenslang rechnen · fiktive 499,99 €"
-        : "Ultra-Abo · fiktive 29,99 € pro Woche";
+    /// <summary>Selected fictional checkout offer.</summary>
+    public string CheckoutPlanLine => IsPremiumPercentPaywall
+        ? _selectedPremiumPercentPack switch
+        {
+            PremiumPercentPack.One => "1 percentage calculation · €9.99",
+            PremiumPercentPack.Ten => "10 percentage calculations · €69.99",
+            PremiumPercentPack.Hundred => "100 percentage calculations · €599.00",
+            _ => throw new ArgumentOutOfRangeException(),
+        }
+        : _selectedPlan switch
+        {
+            PaywallPlan.SingleCalculation => "1 result · €4.99",
+            PaywallPlan.AnnualPremium => "Annual Premium · €699 · includes 100 % calculations",
+            PaywallPlan.Annual => "Annual Standard · €499 per year",
+            _ => "Monthly Ultra · €74.99 per month",
+        };
 
-    /// <summary>Zweite Zusammenfassungszeile im Kaufdialog.</summary>
-    public string CheckoutNoteLine => _selectedPlan == PaywallPlan.OneTime
-        ? "Einmal erfunden, dauerhaft freigeschaltet"
-        : "Jederzeit fiktiv kündbar";
+    /// <summary>Secondary fictional checkout summary.</summary>
+    public string CheckoutNoteLine => IsPremiumPercentPaywall
+        ? _selectedPremiumPercentPack switch
+        {
+            PremiumPercentPack.One => "One premium calculation. No rollover. Maximum prestige.",
+            PremiumPercentPack.Ten => "Save an imaginary 30%. Our accountants are devastated.",
+            PremiumPercentPack.Hundred => "For percentage power users with premium expense accounts.",
+            _ => throw new ArgumentOutOfRangeException(),
+        }
+        : _selectedPlan switch
+        {
+            PaywallPlan.SingleCalculation => "Special offer · valid for this result only",
+            PaywallPlan.AnnualPremium => "One year of results plus 100 premium percentage credits",
+            PaywallPlan.Annual => "One year of premium results without percentage credits",
+            _ => "Renews monthly · cancellable at any time",
+        };
 
-    /// <summary>Verarbeitet eine Ziffer aus der Tastatur.</summary>
+    /// <summary>Handles a digit from keyboard input.</summary>
     public void TypeDigit(char digit)
     {
         if (IsOverlayOpen || !char.IsAsciiDigit(digit))
@@ -247,7 +335,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Refresh();
     }
 
-    /// <summary>Verarbeitet das Dezimaltrennzeichen.</summary>
+    /// <summary>Handles the decimal separator.</summary>
     public void TypeSeparator()
     {
         if (IsOverlayOpen)
@@ -258,7 +346,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Separator();
     }
 
-    /// <summary>Verarbeitet einen Operator aus der Tastatur.</summary>
+    /// <summary>Handles an operator from keyboard input.</summary>
     public void TypeOperator(char symbol)
     {
         if (IsOverlayOpen)
@@ -272,7 +360,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
     }
 
-    /// <summary>Wertet aus.</summary>
+    /// <summary>Evaluates the current expression.</summary>
     public void Evaluate()
     {
         if (IsOverlayOpen)
@@ -296,11 +384,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             _paywallShownThisRun = true;
             RaisePropertyChanged(nameof(CanReopenPaywall));
+            RaisePropertyChanged(nameof(IsShopIconVisible));
             OpenPaywall();
         }
     }
 
-    /// <summary>Wechselt das Vorzeichen.</summary>
+    /// <summary>Toggles the sign.</summary>
     public void ToggleSign()
     {
         if (IsOverlayOpen)
@@ -312,7 +401,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Refresh();
     }
 
-    /// <summary>Teilt den Eintrag durch 100.</summary>
+    /// <summary>Uses a premium credit or opens the percentage paywall.</summary>
     public void Percent()
     {
         if (IsOverlayOpen)
@@ -320,11 +409,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
-        _session.Percent();
-        Refresh();
+        if (_session.TryPercent())
+        {
+            Refresh();
+            return;
+        }
+
+        _pendingPercent = true;
+        OpenPaywall(PaywallReason.PremiumPercent);
     }
 
-    /// <summary>Löscht die letzte Ziffer.</summary>
+    /// <summary>Deletes the last digit.</summary>
     public void Backspace()
     {
         if (IsOverlayOpen)
@@ -336,7 +431,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Refresh();
     }
 
-    /// <summary>Setzt den Eintrag auf 0.</summary>
+    /// <summary>Resets the current entry to zero.</summary>
     public void ClearEntry()
     {
         if (IsOverlayOpen)
@@ -348,7 +443,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Refresh();
     }
 
-    /// <summary>Löscht alles.</summary>
+    /// <summary>Clears the calculator.</summary>
     public void ClearAll()
     {
         if (IsOverlayOpen)
@@ -360,7 +455,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Refresh();
     }
 
-    /// <summary>Öffnet das Preisblatt.</summary>
+    /// <summary>Opens the result-unlock paywall.</summary>
     public void OpenPaywall()
     {
         if (IsUnlocked)
@@ -368,6 +463,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
+        OpenPaywall(PaywallReason.Result);
+    }
+
+    private void OpenPaywall(PaywallReason reason)
+    {
         if (IsPaywallVisible)
         {
             if (IsCheckoutVisible)
@@ -379,13 +479,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
 
         IsCheckoutVisible = false;
+        _paywallReason = reason;
         _paywallDismissalStep = 0;
         RaisePaywallCopyChanged();
+        RaisePropertyChanged(nameof(IsPremiumPercentPaywall));
+        RaisePropertyChanged(nameof(IsResultPaywall));
+        RaisePropertyChanged(nameof(PremiumPercentOfferOpacity));
+        RaisePropertyChanged(nameof(ResultOfferOpacity));
+        RaisePropertyChanged(nameof(CheckoutPlanLine));
+        RaisePropertyChanged(nameof(CheckoutNoteLine));
         IsPaywallVisible = true;
         PaywallOpened?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>Schließt das Preisblatt.</summary>
+    /// <summary>Advances the refusal flow or closes the paywall.</summary>
     public void ClosePaywall()
     {
         if (!IsPaywallVisible)
@@ -403,12 +510,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         IsCheckoutVisible = false;
         IsPaywallVisible = false;
+        _pendingPercent = false;
         _paywallDismissalStep = 0;
         RaisePaywallCopyChanged();
         OverlaysClosed?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>Schließt den Kaufdialog ohne Kauf.</summary>
+    /// <summary>Closes checkout without a purchase.</summary>
     public void CancelCheckout()
     {
         if (!IsCheckoutVisible)
@@ -420,7 +528,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         CheckoutClosed?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>Wählt einen Tarif und öffnet den Kaufdialog.</summary>
+    /// <summary>Selects a result plan and opens fictional checkout.</summary>
     public void SelectPlan(PaywallPlan plan)
     {
         if (plan == PaywallPlan.None)
@@ -436,7 +544,37 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         CheckoutOpened?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>Bestätigt den Demo-Kauf.</summary>
+    private void ShowAnnualPlans(bool showAnnual)
+    {
+        if (_showAnnualPlans == showAnnual)
+        {
+            return;
+        }
+
+        _showAnnualPlans = showAnnual;
+        RaisePropertyChanged(nameof(IsMonthlyPlans));
+        RaisePropertyChanged(nameof(IsAnnualPlans));
+        RaisePropertyChanged(nameof(MonthlyPlansOpacity));
+        RaisePropertyChanged(nameof(AnnualPlansOpacity));
+    }
+
+    /// <summary>Selects a premium percentage pack and opens fictional checkout.</summary>
+    public void SelectPremiumPercentPack(PremiumPercentPack pack)
+    {
+        if (!Enum.IsDefined(pack))
+        {
+            return;
+        }
+
+        _selectedPremiumPercentPack = pack;
+        RaisePropertyChanged(nameof(SelectedPremiumPercentPack));
+        RaisePropertyChanged(nameof(CheckoutPlanLine));
+        RaisePropertyChanged(nameof(CheckoutNoteLine));
+        IsCheckoutVisible = true;
+        CheckoutOpened?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Confirms the fictional purchase.</summary>
     public void ConfirmPurchase()
     {
         if (!IsCheckoutVisible)
@@ -444,21 +582,52 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
-        _session.Unlock(_selectedPlan);
+        if (IsPremiumPercentPaywall)
+        {
+            _session.Paywall.PurchasePremiumPercentPack(_selectedPremiumPercentPack);
+            if (_pendingPercent)
+            {
+                _session.TryPercent();
+            }
+
+            PurchaseCelebrationText = _session.Paywall.State.PremiumPercentCredits == 1
+                ? "PREMIUM % UNLOCKED · 1 CREDIT LEFT ✨"
+                : $"PREMIUM % UNLOCKED · {_session.Paywall.State.PremiumPercentCredits} CREDITS LEFT ✨";
+        }
+        else
+        {
+            _session.Unlock(_selectedPlan);
+            if (_selectedPlan == PaywallPlan.AnnualPremium)
+            {
+                _session.Paywall.PurchasePremiumPercentPack(PremiumPercentPack.Hundred);
+            }
+
+            PurchaseCelebrationText = _selectedPlan switch
+            {
+                PaywallPlan.SingleCalculation => "ONE EXTREMELY PREMIUM RESULT ACQUIRED ✨",
+                PaywallPlan.AnnualPremium => "ANNUAL PREMIUM + 100 % CREDITS ACQUIRED ✨",
+                _ => "PREMIUM ARITHMETIC ACQUIRED ✨",
+            };
+        }
+
+        _pendingPercent = false;
         IsCheckoutVisible = false;
         IsPaywallVisible = false;
         _paywallDismissalStep = 0;
         RaisePaywallCopyChanged();
         Refresh();
+        PurchaseCompleted?.Invoke(this, EventArgs.Empty);
         OverlaysClosed?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>Setzt die Demo zurück.</summary>
+    /// <summary>Resets all local parody state.</summary>
     public void ResetDemo()
     {
         _session.ResetDemo();
         _paywallShownThisRun = false;
+        _pendingPercent = false;
         RaisePropertyChanged(nameof(CanReopenPaywall));
+        RaisePropertyChanged(nameof(IsShopIconVisible));
         IsCheckoutVisible = false;
         IsPaywallVisible = false;
         _paywallDismissalStep = 0;
@@ -523,6 +692,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         SelectPlan(plan);
     }
 
+    private void SelectPremiumPercentPack(string text)
+    {
+        if (!Enum.TryParse<PremiumPercentPack>(text, ignoreCase: true, out var pack))
+        {
+            return;
+        }
+
+        SelectPremiumPercentPack(pack);
+    }
+
     private void Refresh()
     {
         ExpressionText = _session.ExpressionText;
@@ -531,16 +710,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         RaisePropertyChanged(nameof(ResultAutomationName));
         DisplayResult = _session.DisplayResult;
         RaisePropertyChanged(nameof(IsUnlocked));
+        RaisePropertyChanged(nameof(PremiumPercentCredits));
         RaisePropertyChanged(nameof(CanReopenPaywall));
+        RaisePropertyChanged(nameof(IsShopIconVisible));
         RebuildHistory();
     }
 
     private void RaisePaywallCopyChanged()
     {
         RaisePropertyChanged(nameof(PaywallTitle));
+        RaisePropertyChanged(nameof(PaywallBanner));
         RaisePropertyChanged(nameof(PaywallMessage));
         RaisePropertyChanged(nameof(PaywallCloseText));
-        RaisePropertyChanged(nameof(PaywallDismissalHint));
     }
 
     private void RebuildHistory()
@@ -571,4 +752,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     private void RaisePropertyChanged(string? propertyName) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+    private enum PaywallReason
+    {
+        Result,
+        PremiumPercent,
+    }
 }
