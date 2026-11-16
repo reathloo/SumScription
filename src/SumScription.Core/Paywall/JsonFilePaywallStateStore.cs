@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace SumScription.Core.Paywall;
 
-/// <summary>Speichert den Demo-Zustand als JSON-Datei und schreibt atomar.</summary>
+/// <summary>Persists parody state as JSON using atomic replacement.</summary>
 public sealed class JsonFilePaywallStateStore : IPaywallStateStore
 {
     private const string FileName = "state.json";
@@ -14,23 +14,23 @@ public sealed class JsonFilePaywallStateStore : IPaywallStateStore
         Converters = { new JsonStringEnumConverter(namingPolicy: null, allowIntegerValues: false) },
     };
 
-    /// <summary>Erzeugt den Store für einen festen Dateipfad.</summary>
+    /// <summary>Creates a store for a fixed file path.</summary>
     public JsonFilePaywallStateStore(string filePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
         FilePath = filePath;
     }
 
-    /// <summary>Der Pfad der Zustandsdatei.</summary>
+    /// <summary>Path to the state file.</summary>
     public string FilePath { get; }
 
-    /// <summary>Der Standardpfad im Anwendungsdatenverzeichnis des Benutzers.</summary>
+    /// <summary>Default path inside the user's application data directory.</summary>
     public static string DefaultFilePath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "SumScription",
         FileName);
 
-    /// <summary>Erzeugt den Store im Anwendungsdatenverzeichnis.</summary>
+    /// <summary>Creates the store in the application data directory.</summary>
     public static JsonFilePaywallStateStore CreateDefault() => new(DefaultFilePath);
 
     /// <inheritdoc />
@@ -46,7 +46,7 @@ public sealed class JsonFilePaywallStateStore : IPaywallStateStore
             var json = File.ReadAllText(FilePath);
             var state = JsonSerializer.Deserialize<PaywallState>(json, SerializerOptions);
 
-            // Ein nicht definierter Tarif ist ein Defekt der Datei, kein gültiger Zustand.
+            // An undefined plan is a defective file, not valid state.
             return state is null || !Enum.IsDefined(state.Plan) ? PaywallState.Default : state;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException or NotSupportedException)
@@ -73,12 +73,12 @@ public sealed class JsonFilePaywallStateStore : IPaywallStateStore
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or NotSupportedException)
         {
-            // Ein fehlgeschlagener Schreibvorgang darf die Demo nicht blockieren.
+            // A failed write must never block the parody.
             DeleteTempFile(tempPath);
         }
     }
 
-    // Räumt eine liegen gebliebene Temp-Datei auf; auch dieser Schritt darf nie werfen.
+    // Cleans up a leftover temporary file; this step must never throw either.
     private static void DeleteTempFile(string tempPath)
     {
         try
@@ -90,7 +90,7 @@ public sealed class JsonFilePaywallStateStore : IPaywallStateStore
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or NotSupportedException)
         {
-            // Aufräumen ist best effort.
+            // Cleanup is best effort.
         }
     }
 }

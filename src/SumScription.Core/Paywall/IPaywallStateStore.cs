@@ -1,11 +1,11 @@
 namespace SumScription.Core.Paywall;
 
-/// <summary>Persistenz der Demo-Paywall.</summary>
+/// <summary>Persistence contract for parody paywall state.</summary>
 public interface IPaywallStateStore
 {
-    /// <summary>Lädt den Zustand; darf nicht werfen.</summary>
+    /// <summary>Loads state and must not throw.</summary>
     PaywallState Load();
 
-    /// <summary>Speichert den Zustand; darf nicht werfen.</summary>
+    /// <summary>Saves state and must not throw.</summary>
     void Save(PaywallState state);
 }

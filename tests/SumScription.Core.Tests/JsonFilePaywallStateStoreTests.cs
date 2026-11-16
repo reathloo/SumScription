@@ -37,7 +37,7 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
     public void CorruptJson_ReturnsDefaultState()
     {
         Directory.CreateDirectory(_directory);
-        File.WriteAllText(_path, "{ das ist kein json");
+        File.WriteAllText(_path, "{ this is not json");
 
         var store = new JsonFilePaywallStateStore(_path);
 
@@ -68,9 +68,9 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
     }
 
     [Theory]
-    [InlineData(PaywallPlan.Subscription)]
-    [InlineData(PaywallPlan.OneTime)]
-    public void ChosenPlan_IsPersistedAndReloaded(PaywallPlan plan)
+    [InlineData(PaywallPlan.Monthly)]
+    [InlineData(PaywallPlan.Annual)]
+    public void ChosenPlan_IsClearedWhenTheServiceReloads(PaywallPlan plan)
     {
         var service = new PaywallService(new JsonFilePaywallStateStore(_path));
 
@@ -79,8 +79,8 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
 
         var reloaded = new PaywallService(new JsonFilePaywallStateStore(_path));
 
-        Assert.True(reloaded.State.IsUnlocked);
-        Assert.Equal(plan, reloaded.State.Plan);
+        Assert.False(reloaded.State.IsUnlocked);
+        Assert.Equal(PaywallPlan.None, reloaded.State.Plan);
         Assert.Equal(1, reloaded.State.SuccessfulEvaluations);
         Assert.True(reloaded.IsResultVisible);
     }
@@ -90,7 +90,7 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
     {
         var path = _path;
         var service = new PaywallService(new JsonFilePaywallStateStore(path));
-        service.Unlock(PaywallPlan.Subscription);
+        service.Unlock(PaywallPlan.Monthly);
 
         service.Reset();
 
@@ -217,7 +217,7 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
     {
         Directory.CreateDirectory(_directory);
         var blockingFile = Path.Combine(_directory, "blockiert");
-        File.WriteAllText(blockingFile, "kein Verzeichnis");
+        File.WriteAllText(blockingFile, "not a directory");
         var store = new JsonFilePaywallStateStore(Path.Combine(blockingFile, "state.json"));
 
         Assert.Equal(PaywallState.Default, store.Load());
@@ -230,7 +230,7 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
     {
         var store = new JsonFilePaywallStateStore(_path);
 
-        store.Save(new PaywallState(3, true, PaywallPlan.Subscription));
+        store.Save(new PaywallState(3, true, PaywallPlan.Monthly));
 
         Assert.False(File.Exists(_path + ".tmp"));
         Assert.Empty(Directory.GetFiles(_directory, "*.tmp"));
@@ -238,14 +238,14 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
         using var document = JsonDocument.Parse(File.ReadAllText(_path));
         Assert.Equal(3, document.RootElement.GetProperty("SuccessfulEvaluations").GetInt32());
         Assert.True(document.RootElement.GetProperty("IsUnlocked").GetBoolean());
-        Assert.Equal("Subscription", document.RootElement.GetProperty("Plan").GetString());
+        Assert.Equal("Monthly", document.RootElement.GetProperty("Plan").GetString());
     }
 
     [Fact]
     public void Save_ReplacesExistingStateCompletely()
     {
         var store = new JsonFilePaywallStateStore(_path);
-        store.Save(new PaywallState(25, true, PaywallPlan.OneTime));
+        store.Save(new PaywallState(25, true, PaywallPlan.Annual));
 
         store.Save(PaywallState.Default);
 
@@ -254,7 +254,7 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
         Assert.Equal(0, document.RootElement.GetProperty("SuccessfulEvaluations").GetInt32());
         Assert.False(document.RootElement.GetProperty("IsUnlocked").GetBoolean());
         Assert.Equal("None", document.RootElement.GetProperty("Plan").GetString());
-        Assert.DoesNotContain("OneTime", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("Annual", json, StringComparison.Ordinal);
         Assert.Equal(PaywallState.Default, store.Load());
     }
 
@@ -278,11 +278,11 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
         var store = new JsonFilePaywallStateStore(_path);
         store.Save(new PaywallState(4, false, PaywallPlan.None));
 
-        // Ein Verzeichnis an der Zielstelle lässt das Verschieben scheitern.
+        // A directory at the target path makes the move fail.
         Directory.Move(_path, Path.Combine(_directory, "state.json.bak"));
         Directory.CreateDirectory(_path);
 
-        var exception = Record.Exception(() => store.Save(new PaywallState(9, true, PaywallPlan.Subscription)));
+        var exception = Record.Exception(() => store.Save(new PaywallState(9, true, PaywallPlan.Monthly)));
 
         Assert.Null(exception);
         Assert.Empty(Directory.GetFiles(_directory, "*.tmp"));
@@ -298,7 +298,7 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
 
         Directory.CreateDirectory(_path + ".tmp");
 
-        var exception = Record.Exception(() => store.Save(new PaywallState(9, true, PaywallPlan.Subscription)));
+        var exception = Record.Exception(() => store.Save(new PaywallState(9, true, PaywallPlan.Monthly)));
 
         Assert.Null(exception);
         Assert.Equal(previous, File.ReadAllText(_path));
