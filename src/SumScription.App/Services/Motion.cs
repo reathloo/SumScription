@@ -4,16 +4,16 @@ using Avalonia.VisualTree;
 
 namespace SumScription.App.Services;
 
-/// <summary>Schaltet Bewegungen ab, wenn die Umgebung sie reduziert.</summary>
+/// <summary>Reduces motion when requested by the environment.</summary>
 public static class Motion
 {
-    /// <summary>Umgebungsvariable für reduzierte Bewegung.</summary>
+    /// <summary>Environment variable used to request reduced motion.</summary>
     public const string ReducedMotionVariable = "SUMSCRIPTION_REDUCED_MOTION";
 
-    /// <summary>Wahr, wenn nur Opazitätswechsel ohne Verschieben erlaubt sind.</summary>
+    /// <summary>Whether only opacity feedback without movement is allowed.</summary>
     public static bool Reduced { get; } = ReadReducedMotion();
 
-    /// <summary>Ersetzt alle Übergänge durch 1-ms-Opazitätswechsel.</summary>
+    /// <summary>Replaces transitions with one-millisecond opacity changes.</summary>
     public static void DisableTransitions(Visual root)
     {
         ArgumentNullException.ThrowIfNull(root);
