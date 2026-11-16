@@ -13,7 +13,7 @@ using SumScription.App.ViewModels;
 
 namespace SumScription.App.Views;
 
-/// <summary>Fenster mit Rechenband, Tastenfeld und Demo-Paywall.</summary>
+/// <summary>Window containing the calculator, keypad, and parody paywall.</summary>
 public partial class MainWindow : Window
 {
     private const int KeypadRows = 5;
@@ -23,11 +23,13 @@ public partial class MainWindow : Window
     private const double RoomyWindowHeight = 760d;
 
     private readonly Control?[,] _keypad = new Control?[KeypadRows, KeypadColumns];
+    private readonly Random _paywallButtonRandom = new();
 
     private MainWindowViewModel? _viewModel;
     private IInputElement? _previousFocus;
+    private long _lastPaywallButtonMoveAt;
 
-    /// <summary>Erzeugt das Fenster ohne Datenkontext.</summary>
+    /// <summary>Creates the window without a data context.</summary>
     public MainWindow()
     {
         InitializeComponent();
@@ -36,7 +38,7 @@ public partial class MainWindow : Window
         AddHandler(KeyDownEvent, OnPreviewKeyDown, RoutingStrategies.Tunnel);
     }
 
-    /// <summary>Erzeugt das Fenster für ein ViewModel.</summary>
+    /// <summary>Creates the window for a view model.</summary>
     public MainWindow(MainWindowViewModel viewModel)
         : this()
     {
@@ -106,8 +108,8 @@ public partial class MainWindow : Window
         AcButton.Focus();
     }
 
-    // Einzige Stelle, die Enter auswertet: der Tunnel-Handler läuft vor allen Knöpfen und
-    // markiert die Geste, damit weder ein fokussierter Knopf noch OnKeyDown sie erneut auslöst.
+    // The only place that evaluates Enter: this tunnel handler runs before all buttons and
+    // marks the gesture so neither a focused button nor OnKeyDown can trigger it twice.
     private void OnPreviewKeyDown(object? sender, KeyEventArgs e)
     {
         ArgumentNullException.ThrowIfNull(e);
@@ -142,6 +144,7 @@ public partial class MainWindow : Window
             viewModel.PaywallDismissalAdvanced -= OnPaywallDismissalAdvanced;
             viewModel.CheckoutOpened -= OnCheckoutOpened;
             viewModel.CheckoutClosed -= OnCheckoutClosed;
+            viewModel.PurchaseCompleted -= OnPurchaseCompleted;
             viewModel.OverlaysClosed -= OnOverlaysClosed;
             _viewModel = null;
         }
@@ -161,6 +164,7 @@ public partial class MainWindow : Window
         viewModel.PaywallDismissalAdvanced += OnPaywallDismissalAdvanced;
         viewModel.CheckoutOpened += OnCheckoutOpened;
         viewModel.CheckoutClosed += OnCheckoutClosed;
+        viewModel.PurchaseCompleted += OnPurchaseCompleted;
         viewModel.OverlaysClosed += OnOverlaysClosed;
     }
 
@@ -209,8 +213,8 @@ public partial class MainWindow : Window
             return false;
         }
 
-        // Layoutabhängige Zeichen zuerst: auf deutscher Tastatur ist Shift+0 „=“, Shift+7 „/“,
-        // Shift+Plus „*“ — physische Key-Werte wären hier falsch.
+        // Prefer layout-dependent symbols: German layouts map Shift+0 to "=", Shift+7 to "/",
+        // and Shift+Plus to "*", so physical key values would be incorrect.
         return HandleSymbol(viewModel, e.KeySymbol) || HandlePhysicalKey(viewModel, e.Key);
     }
 
@@ -243,12 +247,15 @@ public partial class MainWindow : Window
             case '=':
                 viewModel.Evaluate();
                 return true;
+            case '%':
+                viewModel.Percent();
+                return true;
             default:
                 return false;
         }
     }
 
-    // Nur Aktionen ohne layoutabhängiges Zeichen: Ziffernblock, Escape, Rücktaste.
+    // Only actions without layout-dependent symbols: numeric keypad, Escape, and Backspace.
     private static bool HandlePhysicalKey(MainWindowViewModel viewModel, Key key)
     {
         switch (key)
@@ -327,7 +334,8 @@ public partial class MainWindow : Window
 
         if (ReferenceEquals(e.Source, sender))
         {
-            _viewModel?.ClosePaywall();
+            MovePaywallCloseButton(e.GetPosition(PaywallLayer));
+            e.Handled = true;
         }
     }
 
@@ -351,10 +359,18 @@ public partial class MainWindow : Window
     private void OnPaywallOpened(object? sender, EventArgs e)
     {
         _previousFocus = FocusManager?.GetFocusedElement();
+        _lastPaywallButtonMoveAt = 0;
+        PaywallCloseButton.RenderTransform = new TranslateTransform();
         Dispatcher.UIThread.Post(() =>
         {
-            AnimateIn(PaywallSheet);
-            PlanSubscriptionButton.Focus();
+            if (_viewModel?.IsPremiumPercentPaywall == true)
+            {
+                PercentPackTenButton.Focus();
+            }
+            else
+            {
+                PlanMonthlyButton.Focus();
+            }
         });
     }
 
@@ -371,13 +387,36 @@ public partial class MainWindow : Window
     private void OnCheckoutClosed(object? sender, EventArgs e) =>
         Dispatcher.UIThread.Post(() =>
         {
-            if (_viewModel?.SelectedPlan == Core.Paywall.PaywallPlan.OneTime)
+            if (_viewModel?.IsPremiumPercentPaywall == true)
             {
-                PlanOneTimeButton.Focus();
+                switch (_viewModel.SelectedPremiumPercentPack)
+                {
+                    case Core.Paywall.PremiumPercentPack.One:
+                        PercentPackOneButton.Focus();
+                        break;
+                    case Core.Paywall.PremiumPercentPack.Hundred:
+                        PercentPackHundredButton.Focus();
+                        break;
+                    default:
+                        PercentPackTenButton.Focus();
+                        break;
+                }
+            }
+            else if (_viewModel?.SelectedPlan == Core.Paywall.PaywallPlan.SingleCalculation)
+            {
+                PlanSingleCalculationButton.Focus();
+            }
+            else if (_viewModel?.SelectedPlan == Core.Paywall.PaywallPlan.Annual)
+            {
+                PlanAnnualButton.Focus();
+            }
+            else if (_viewModel?.SelectedPlan == Core.Paywall.PaywallPlan.AnnualPremium)
+            {
+                PlanAnnualPremiumButton.Focus();
             }
             else
             {
-                PlanSubscriptionButton.Focus();
+                PlanMonthlyButton.Focus();
             }
         });
 
@@ -392,9 +431,213 @@ public partial class MainWindow : Window
                 return;
             }
 
-            // Nach dem Kauf ist „Ergebnis freischalten" ausgeblendet — dann zurück auf AC.
+            // After a result purchase the reopen button is hidden, so fall back to AC.
             (UnlockButton.IsEffectivelyVisible ? UnlockButton : AcButton).Focus();
         });
+
+    private void OnPaywallClosePointerEntered(object? sender, PointerEventArgs e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+        MovePaywallCloseButton(e.GetPosition(PaywallLayer));
+    }
+
+    private void OnPaywallClosePointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+        MovePaywallCloseButton(e.GetPosition(PaywallLayer));
+        e.Handled = true;
+    }
+
+    private void OnPaywallCloseKeyDown(object? sender, KeyEventArgs e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+
+        if (e.Key is not (Key.Enter or Key.Return or Key.Space))
+        {
+            return;
+        }
+
+        _viewModel?.ClosePaywall();
+        e.Handled = true;
+    }
+
+    private void MovePaywallCloseButton(Point pointerPosition)
+    {
+        if (_viewModel?.IsPaywallVisible != true)
+        {
+            return;
+        }
+
+        var now = Environment.TickCount64;
+        if (now - _lastPaywallButtonMoveAt < 220)
+        {
+            return;
+        }
+
+        _lastPaywallButtonMoveAt = now;
+
+        var transform = PaywallCloseButton.RenderTransform as TranslateTransform ?? new TranslateTransform();
+        var startX = transform.X;
+        var startY = transform.Y;
+        var layerWidth = Math.Max(PaywallLayer.Bounds.Width, Bounds.Width);
+        var layerHeight = Math.Max(PaywallLayer.Bounds.Height, Bounds.Height);
+        var buttonWidth = Math.Max(PaywallCloseButton.Bounds.Width, 235d);
+        var buttonHeight = Math.Max(PaywallCloseButton.Bounds.Height, 42d);
+        var maxX = Math.Max(0d, (layerWidth - buttonWidth) / 2d - 12d);
+        var maxUp = Math.Max(0d, layerHeight - buttonHeight - 36d);
+        var baseCenterX = layerWidth / 2d;
+        var baseCenterY = layerHeight - 18d - buttonHeight / 2d;
+
+        double targetX;
+        double targetY;
+        var attempts = 0;
+        do
+        {
+            targetX = (_paywallButtonRandom.NextDouble() * 2d - 1d) * maxX;
+            targetY = -_paywallButtonRandom.NextDouble() * maxUp;
+            attempts++;
+        }
+        while (attempts < 24 &&
+               (Math.Abs(targetX - startX) + Math.Abs(targetY - startY) < 150d ||
+                Distance(baseCenterX + targetX, baseCenterY + targetY, pointerPosition.X, pointerPosition.Y) < 170d));
+
+        transform.X = targetX;
+        transform.Y = targetY;
+        PaywallCloseButton.RenderTransform = transform;
+    }
+
+    private static double Distance(double firstX, double firstY, double secondX, double secondY)
+    {
+        var deltaX = firstX - secondX;
+        var deltaY = firstY - secondY;
+        return Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+    }
+
+    private void OnPurchaseCompleted(object? sender, EventArgs e) =>
+        Dispatcher.UIThread.Post(() => _ = PlayPurchaseCelebrationAsync());
+
+    private async Task PlayPurchaseCelebrationAsync()
+    {
+        CelebrationLayer.IsVisible = true;
+        PurchaseToast.Opacity = 1;
+
+        if (Motion.Reduced)
+        {
+            await Task.Delay(1600);
+            CelebrationLayer.IsVisible = false;
+            return;
+        }
+
+        ConfettiCanvas.Children.Clear();
+        var random = new Random(20261115);
+        var colors = new[] { "#FFFFF36D", "#FF54F3FF", "#FFFF5A8F", "#FFF49A58", "#FF8B7CFF" };
+        var width = Math.Max(Bounds.Width, 390d);
+        var height = Math.Max(Bounds.Height, 650d);
+        var animations = new List<Task>();
+
+        PurchaseToast.RenderTransform = new TranslateTransform();
+        var toastAnimation = new Animation
+        {
+            Duration = TimeSpan.FromMilliseconds(520),
+            Easing = new CubicEaseOut(),
+            FillMode = FillMode.None,
+            Children =
+            {
+                new KeyFrame
+                {
+                    Cue = new Cue(0d),
+                    Setters =
+                    {
+                        new Setter(OpacityProperty, 0d),
+                        new Setter(TranslateTransform.YProperty, -18d),
+                    },
+                },
+                new KeyFrame
+                {
+                    Cue = new Cue(0.5d),
+                    Setters =
+                    {
+                        new Setter(OpacityProperty, 1d),
+                        new Setter(TranslateTransform.YProperty, 5d),
+                    },
+                },
+                new KeyFrame
+                {
+                    Cue = new Cue(1d),
+                    Setters =
+                    {
+                        new Setter(OpacityProperty, 1d),
+                        new Setter(TranslateTransform.YProperty, 0d),
+                    },
+                },
+            },
+        };
+        animations.Add(toastAnimation.RunAsync(PurchaseToast));
+
+        for (var index = 0; index < 48; index++)
+        {
+            var piece = new Border
+            {
+                Width = random.Next(8, 14),
+                Height = random.Next(12, 24),
+                CornerRadius = new CornerRadius(2),
+                Background = new SolidColorBrush(Color.Parse(colors[index % colors.Length])),
+                RenderTransform = new TranslateTransform(),
+            };
+
+            Canvas.SetLeft(piece, random.NextDouble() * Math.Max(1d, width - 12d));
+            Canvas.SetTop(piece, -20d - random.NextDouble() * 260d);
+            ConfettiCanvas.Children.Add(piece);
+
+            var drift = random.NextDouble() * 70d - 35d;
+            var fall = height + 240d + random.NextDouble() * 140d;
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromMilliseconds(1250 + random.Next(0, 650)),
+                Easing = new CubicEaseIn(),
+                FillMode = FillMode.None,
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Cue = new Cue(0d),
+                        Setters =
+                        {
+                            new Setter(OpacityProperty, 1d),
+                            new Setter(TranslateTransform.XProperty, 0d),
+                            new Setter(TranslateTransform.YProperty, 0d),
+                        },
+                    },
+                    new KeyFrame
+                    {
+                        Cue = new Cue(0.78d),
+                        Setters =
+                        {
+                            new Setter(OpacityProperty, 1d),
+                            new Setter(TranslateTransform.XProperty, drift),
+                            new Setter(TranslateTransform.YProperty, fall * 0.78d),
+                        },
+                    },
+                    new KeyFrame
+                    {
+                        Cue = new Cue(1d),
+                        Setters =
+                        {
+                            new Setter(OpacityProperty, 0d),
+                            new Setter(TranslateTransform.XProperty, drift * 1.25d),
+                            new Setter(TranslateTransform.YProperty, fall),
+                        },
+                    },
+                },
+            };
+
+            animations.Add(animation.RunAsync(piece));
+        }
+
+        await Task.WhenAll(animations);
+        ConfettiCanvas.Children.Clear();
+        CelebrationLayer.IsVisible = false;
+    }
 
     private void AnimateResult()
     {
