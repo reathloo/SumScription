@@ -8,8 +8,9 @@
         Height="700"
         MinWidth="390"
         MinHeight="650"
-        Background="Transparent"
-        TransparencyLevelHint="Mica, AcrylicBlur, Blur"
+        Icon="/Assets/app-icon.ico"
+        Background="{DynamicResource WindowBackdropBrush}"
+        TransparencyLevelHint="None"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="PreferSystemChrome"
         ExtendClientAreaTitleBarHeightHint="48"
@@ -17,19 +18,7 @@
         WindowStartupLocation="CenterScreen">
 
   <Panel Background="{DynamicResource WindowBackdropBrush}">
-    <!-- Zwei ruhige Farbkörper geben dem transparenten Fenster Tiefe. -->
-    <Ellipse Width="260" Height="260" Margin="-110,-80,0,0"
-             HorizontalAlignment="Left" VerticalAlignment="Top"
-             Fill="{DynamicResource OrbOneBrush}" IsHitTestVisible="False">
-      <Ellipse.Effect><BlurEffect Radius="70" /></Ellipse.Effect>
-    </Ellipse>
-    <Ellipse Width="230" Height="230" Margin="0,0,-100,70"
-             HorizontalAlignment="Right" VerticalAlignment="Bottom"
-             Fill="{DynamicResource OrbTwoBrush}" IsHitTestVisible="False">
-      <Ellipse.Effect><BlurEffect Radius="76" /></Ellipse.Effect>
-    </Ellipse>
-
-    <Grid RowDefinitions="54,*,Auto,Auto"
+    <Grid RowDefinitions="54,*,Auto"
           Margin="20,10,20,18"
           IsEnabled="{Binding !IsOverlayOpen}">
       <Grid Grid.Row="0"
@@ -48,25 +37,25 @@
         </StackPanel>
       </Grid>
 
-      <!-- Die Anzeige ist die große, ruhige Glasfläche; der Verlauf bleibt bewusst sekundär. -->
+      <!-- The display is the main quiet glass surface; history stays secondary. -->
       <Border Grid.Row="1" Margin="0,4,0,14" CornerRadius="26"
               Background="{DynamicResource GlassStrongBrush}"
               BorderBrush="{DynamicResource GlassEdgeBrush}" BorderThickness="1"
               ClipToBounds="True">
         <Grid RowDefinitions="Auto,112,*" Margin="22,18,22,16">
           <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
-            <TextBlock Classes="meta tertiary" Text="Verlauf" VerticalAlignment="Center" />
+            <TextBlock Classes="meta tertiary" Text="History" VerticalAlignment="Center" />
             <Button Grid.Column="1" Classes="glass" Content="C" Width="34" Height="30" Padding="0"
-                    TabIndex="1" AutomationProperties.Name="Eintrag löschen"
+                    TabIndex="1" AutomationProperties.Name="Clear entry"
                     Command="{Binding ClearEntryCommand}" />
             <Button Grid.Column="2" Classes="glass" Content="⌫" Width="34" Height="30" Padding="0"
-                    TabIndex="2" AutomationProperties.Name="Rücktaste"
+                    TabIndex="2" AutomationProperties.Name="Backspace"
                     Command="{Binding BackspaceCommand}" />
           </Grid>
 
           <Grid Grid.Row="1" RowDefinitions="Auto,*" Margin="0,10,0,0">
             <TextBlock Classes="expression" Text="{Binding ExpressionText}"
-                       AutomationProperties.Name="Ausdruck" />
+                       AutomationProperties.Name="Expression" />
             <Grid Grid.Row="1">
               <TextBlock Name="ResultLine" Classes="result"
                          Classes.masked="{Binding IsResultMasked}"
@@ -79,22 +68,22 @@
                 </TextBlock.Transitions>
               </TextBlock>
               <TextBlock Name="ErrorLine" Classes="error" Text="{Binding DisplayResult}"
-                         IsVisible="{Binding HasError}" AutomationProperties.Name="Fehler"
+                         IsVisible="{Binding HasError}" AutomationProperties.Name="Error"
                          VerticalAlignment="Bottom" />
               <Border IsVisible="{Binding IsResultMasked}"
                       HorizontalAlignment="Right" VerticalAlignment="Bottom"
                       Margin="0,0,2,8" Padding="10,6" CornerRadius="10"
                       Background="{DynamicResource OperatorBrush}">
-                <TextBlock Text="GESPERRT" FontSize="10" FontWeight="Bold" LetterSpacing="0.7"
+                <TextBlock Text="LOCKED" FontSize="10" FontWeight="Bold" LetterSpacing="0.7"
                            Foreground="{DynamicResource OperatorTextBrush}" />
               </Border>
             </Grid>
           </Grid>
 
           <ScrollViewer Grid.Row="2" Margin="0,10,0,0" MinHeight="52" MaxHeight="112"
-                        VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
             <Panel>
-              <TextBlock Classes="history tertiary" Text="Noch keine Berechnungen"
+              <TextBlock Classes="history tertiary" Text="No calculations yet"
                          IsVisible="{Binding IsHistoryEmpty}" />
               <ItemsControl ItemsSource="{Binding History}">
                 <ItemsControl.ItemTemplate>
@@ -118,71 +107,102 @@
             ColumnDefinitions="*,*,*,*"
             RowSpacing="8" ColumnSpacing="8">
         <Button Name="AcButton" Grid.Row="0" Grid.Column="0" Classes="calc function" Content="AC" TabIndex="3"
-                AutomationProperties.Name="Alles löschen" Command="{Binding ClearAllCommand}" />
+                AutomationProperties.Name="Clear all" Command="{Binding ClearAllCommand}" />
         <Button Grid.Row="0" Grid.Column="1" Classes="calc function" Content="±" TabIndex="4"
-                AutomationProperties.Name="Vorzeichen wechseln" Command="{Binding ToggleSignCommand}" />
+                AutomationProperties.Name="Toggle sign" Command="{Binding ToggleSignCommand}" />
         <Button Grid.Row="0" Grid.Column="2" Classes="calc function" Content="%" TabIndex="5"
-                AutomationProperties.Name="Prozent" Command="{Binding PercentCommand}" />
+                AutomationProperties.Name="Premium percent" Command="{Binding PercentCommand}" />
         <Button Grid.Row="0" Grid.Column="3" Classes="calc operator" Content="÷" TabIndex="6"
-                AutomationProperties.Name="Geteilt" Command="{Binding OperatorCommand}" CommandParameter="/" />
+                AutomationProperties.Name="Divide" Command="{Binding OperatorCommand}" CommandParameter="/" />
 
         <Button Grid.Row="1" Grid.Column="0" Classes="calc digit" Content="7" TabIndex="7"
-                AutomationProperties.Name="Sieben" Command="{Binding DigitCommand}" CommandParameter="7" />
+                AutomationProperties.Name="Seven" Command="{Binding DigitCommand}" CommandParameter="7" />
         <Button Grid.Row="1" Grid.Column="1" Classes="calc digit" Content="8" TabIndex="8"
-                AutomationProperties.Name="Acht" Command="{Binding DigitCommand}" CommandParameter="8" />
+                AutomationProperties.Name="Eight" Command="{Binding DigitCommand}" CommandParameter="8" />
         <Button Grid.Row="1" Grid.Column="2" Classes="calc digit" Content="9" TabIndex="9"
-                AutomationProperties.Name="Neun" Command="{Binding DigitCommand}" CommandParameter="9" />
+                AutomationProperties.Name="Nine" Command="{Binding DigitCommand}" CommandParameter="9" />
         <Button Grid.Row="1" Grid.Column="3" Classes="calc operator" Content="×" TabIndex="10"
-                AutomationProperties.Name="Mal" Command="{Binding OperatorCommand}" CommandParameter="*" />
+                AutomationProperties.Name="Multiply" Command="{Binding OperatorCommand}" CommandParameter="*" />
 
         <Button Grid.Row="2" Grid.Column="0" Classes="calc digit" Content="4" TabIndex="11"
-                AutomationProperties.Name="Vier" Command="{Binding DigitCommand}" CommandParameter="4" />
+                AutomationProperties.Name="Four" Command="{Binding DigitCommand}" CommandParameter="4" />
         <Button Grid.Row="2" Grid.Column="1" Classes="calc digit" Content="5" TabIndex="12"
-                AutomationProperties.Name="Fünf" Command="{Binding DigitCommand}" CommandParameter="5" />
+                AutomationProperties.Name="Five" Command="{Binding DigitCommand}" CommandParameter="5" />
         <Button Grid.Row="2" Grid.Column="2" Classes="calc digit" Content="6" TabIndex="13"
-                AutomationProperties.Name="Sechs" Command="{Binding DigitCommand}" CommandParameter="6" />
+                AutomationProperties.Name="Six" Command="{Binding DigitCommand}" CommandParameter="6" />
         <Button Grid.Row="2" Grid.Column="3" Classes="calc operator" Content="−" TabIndex="14"
                 AutomationProperties.Name="Minus" Command="{Binding OperatorCommand}" CommandParameter="-" />
 
         <Button Grid.Row="3" Grid.Column="0" Classes="calc digit" Content="1" TabIndex="15"
-                AutomationProperties.Name="Eins" Command="{Binding DigitCommand}" CommandParameter="1" />
+                AutomationProperties.Name="One" Command="{Binding DigitCommand}" CommandParameter="1" />
         <Button Grid.Row="3" Grid.Column="1" Classes="calc digit" Content="2" TabIndex="16"
-                AutomationProperties.Name="Zwei" Command="{Binding DigitCommand}" CommandParameter="2" />
+                AutomationProperties.Name="Two" Command="{Binding DigitCommand}" CommandParameter="2" />
         <Button Grid.Row="3" Grid.Column="2" Classes="calc digit" Content="3" TabIndex="17"
-                AutomationProperties.Name="Drei" Command="{Binding DigitCommand}" CommandParameter="3" />
+                AutomationProperties.Name="Three" Command="{Binding DigitCommand}" CommandParameter="3" />
         <Button Grid.Row="3" Grid.Column="3" Classes="calc operator" Content="+" TabIndex="18"
                 AutomationProperties.Name="Plus" Command="{Binding OperatorCommand}" CommandParameter="+" />
 
         <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Classes="calc digit" Content="0" TabIndex="19"
-                AutomationProperties.Name="Null" Command="{Binding DigitCommand}" CommandParameter="0" />
+                AutomationProperties.Name="Zero" Command="{Binding DigitCommand}" CommandParameter="0" />
         <Button Grid.Row="4" Grid.Column="2" Classes="calc digit" Content="," TabIndex="20"
-                AutomationProperties.Name="Dezimaltrennzeichen" Command="{Binding SeparatorCommand}" />
+                AutomationProperties.Name="Decimal separator" Command="{Binding SeparatorCommand}" />
         <Button Grid.Row="4" Grid.Column="3" Classes="calc operator" Content="=" TabIndex="21"
-                AutomationProperties.Name="Ergebnis" Command="{Binding EqualsCommand}" />
+                AutomationProperties.Name="Equals" Command="{Binding EqualsCommand}" />
       </Grid>
 
-      <Grid Grid.Row="3" Margin="0,12,0,0">
-        <Button Name="UnlockButton" Classes="glass" Content="Premium-Angebot erneut öffnen" TabIndex="22"
-                IsVisible="{Binding CanReopenPaywall}" AutomationProperties.Name="Premium-Angebot erneut öffnen"
-                Command="{Binding OpenPaywallCommand}" />
-      </Grid>
     </Grid>
 
-    <!-- Absichtlich aufdringliche, aber eindeutig fiktive Parodie-Paywall. -->
-    <Grid Name="PaywallLayer" IsVisible="{Binding IsPaywallVisible}"
-          KeyboardNavigation.TabNavigation="Cycle"
-          Background="{DynamicResource ScrimBrush}"
-          PointerPressed="OnPaywallScrimPressed">
+    <Button Name="UnlockButton" Classes="offer-bubble" TabIndex="22"
+            ZIndex="2"
+            Width="58" Height="64"
+            Margin="6,150,0,0"
+            HorizontalAlignment="Left" VerticalAlignment="Top"
+            IsVisible="{Binding IsShopIconVisible}"
+            AutomationProperties.Name="Open premium shop"
+            ToolTip.Tip="Open premium shop"
+            Command="{Binding OpenPaywallCommand}">
+      <Grid RowDefinitions="*,Auto">
+        <Grid>
+          <TextBlock Text="💎" FontSize="27"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <Border Width="18" Height="18" CornerRadius="9"
+                  Margin="0,-4,-5,0"
+                  HorizontalAlignment="Right" VerticalAlignment="Top"
+                  Background="{DynamicResource PaywallHotBrush}"
+                  BorderBrush="White" BorderThickness="1">
+            <TextBlock Text="!" FontSize="11" FontWeight="Black"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Foreground="White" />
+          </Border>
+        </Grid>
+        <Border Grid.Row="1" Margin="4,0" Padding="4,1" CornerRadius="5"
+                Background="{DynamicResource PaywallWarningBrush}">
+          <TextBlock Text="SHOP" FontSize="8" FontWeight="Black"
+                     TextAlignment="Center"
+                     Foreground="{DynamicResource PaywallWarningTextBrush}" />
+        </Border>
+      </Grid>
+    </Button>
+
+    <!-- Kept in the visual tree so opening it does not trigger first-use layout work. -->
+    <Grid Name="PaywallLayer"
+          IsEnabled="{Binding IsPaywallVisible}"
+          IsHitTestVisible="{Binding IsPaywallVisible}"
+          KeyboardNavigation.TabNavigation="Cycle">
+      <Border Name="PaywallScrim"
+              Background="{DynamicResource ScrimBrush}"
+              Opacity="{Binding PaywallOpacity}"
+              PointerPressed="OnPaywallScrimPressed" />
       <Border Name="PaywallSheet" MaxWidth="380" Margin="18"
               HorizontalAlignment="Stretch" VerticalAlignment="Center"
+              Opacity="{Binding PaywallOpacity}"
               Background="{DynamicResource PaywallBrush}"
               BorderBrush="{DynamicResource PaywallEdgeBrush}" BorderThickness="1"
               CornerRadius="30" Padding="24,22">
-        <Border.Effect><DropShadowEffect Color="#B0000000" BlurRadius="32" OffsetY="16" Opacity="0.7" /></Border.Effect>
         <StackPanel Spacing="13">
           <Border CornerRadius="10" Padding="10,7"
                   Background="{DynamicResource PaywallWarningBrush}">
-            <TextBlock Text="⚡ NUR JETZT: DIE TEUERSTE 2 DER WELT ⚡"
+            <TextBlock Text="{Binding PaywallBanner}"
                        FontSize="11" FontWeight="Black" TextAlignment="Center"
                        Foreground="{DynamicResource PaywallWarningTextBrush}" />
           </Border>
@@ -194,68 +214,192 @@
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
               <TextBlock Text="SumScription ULTRA MAX+++" FontSize="13" FontWeight="Black"
                          Foreground="{DynamicResource PaywallAccentBrush}" />
-              <TextBlock Text="100 % fiktiv · 0 % echter Kauf · 200 % frech" FontSize="10"
+              <TextBlock Text="100% premium · 0% real payment · 200% audacity" FontSize="10"
                          Foreground="{DynamicResource PaywallSoftBrush}" />
             </StackPanel>
           </Grid>
 
           <TextBlock Text="{Binding PaywallTitle}" FontSize="29" FontWeight="Bold"
-                     LetterSpacing="-0.8" TextWrapping="Wrap" Foreground="White">
-            <TextBlock.Effect><DropShadowEffect Color="#FF54F3FF" BlurRadius="10" Opacity="0.75" /></TextBlock.Effect>
-          </TextBlock>
+                     LetterSpacing="-0.8" TextWrapping="Wrap" Foreground="White" />
           <TextBlock Text="{Binding PaywallMessage}" FontSize="14" LineHeight="20"
                      TextWrapping="Wrap" Foreground="{DynamicResource PaywallSoftBrush}" />
 
-          <Button Name="PlanSubscriptionButton" Classes="plan" TabIndex="1"
-                  AutomationProperties.Name="Fiktives Ultra-Abo, 29,99 Euro pro Woche"
-                  Command="{Binding SelectPlanCommand}" CommandParameter="Subscription">
-            <Grid ColumnDefinitions="*,Auto">
-              <StackPanel Spacing="3">
-                <Border HorizontalAlignment="Left" CornerRadius="6" Padding="7,2"
-                        Background="{DynamicResource PaywallCyanBrush}">
-                  <TextBlock Text="BELIEBTESTER GELDVERNICHTER" FontSize="8" FontWeight="Black"
-                             Foreground="{DynamicResource PaywallWarningTextBrush}" />
-                </Border>
-                <TextBlock Text="Wöchentlich Ultra" FontSize="14" FontWeight="Bold" Foreground="White" />
-                <TextBlock Text="Für Menschen mit sehr teuren Ergebnissen" FontSize="10" Foreground="{DynamicResource PaywallSoftBrush}" />
-              </StackPanel>
-              <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                <TextBlock Text="29,99 €" FontSize="20" FontWeight="Black" TextAlignment="Right"
-                           Foreground="{DynamicResource PaywallAccentBrush}" />
-                <TextBlock Text="PRO WOCHE!" FontSize="9" FontWeight="Bold" TextAlignment="Right" Foreground="White" />
-              </StackPanel>
-            </Grid>
-          </Button>
-          <Button Name="PlanOneTimeButton" Classes="plan" TabIndex="2"
-                  AutomationProperties.Name="Fiktiver Lebenskauf, 499,99 Euro"
-                  Command="{Binding SelectPlanCommand}" CommandParameter="OneTime">
-            <Grid ColumnDefinitions="*,Auto">
-              <StackPanel Spacing="3">
-                <Border HorizontalAlignment="Left" CornerRadius="6" Padding="7,2"
-                        Background="{DynamicResource PaywallHotBrush}">
-                  <TextBlock Text="NUR FÜR MATHE-FANS" FontSize="8" FontWeight="Black" Foreground="White" />
-                </Border>
-                <TextBlock Text="Lebenslang rechnen" FontSize="14" FontWeight="Bold" Foreground="White" />
-                <TextBlock Text="Ein Schnäppchen für eine einzelne Zahl" FontSize="10" Foreground="{DynamicResource PaywallSoftBrush}" />
-              </StackPanel>
-              <TextBlock Grid.Column="1" Text="499,99 €" FontSize="20" FontWeight="Black"
-                         VerticalAlignment="Center" Foreground="{DynamicResource PaywallAccentBrush}" />
-            </Grid>
-          </Button>
+          <!-- Both offer groups stay measured so the percent screen has no first-use layout spike. -->
+          <Grid>
+          <StackPanel Spacing="10"
+                      Opacity="{Binding ResultOfferOpacity}"
+                      IsEnabled="{Binding IsResultPaywall}"
+                      IsHitTestVisible="{Binding IsResultPaywall}">
+            <Border Padding="4" CornerRadius="14" Background="#26000000"
+                    BorderBrush="#52FFFFFF" BorderThickness="1">
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="4">
+                <Button Classes="billing-segment" Classes.active="{Binding IsMonthlyPlans}"
+                        TabIndex="1" Content="MONTHLY"
+                        AutomationProperties.Name="Show monthly offers"
+                        Command="{Binding ShowMonthlyPlansCommand}" />
+                <Button Grid.Column="1" Classes="billing-segment" Classes.active="{Binding IsAnnualPlans}"
+                        TabIndex="2" Content="ANNUAL"
+                        AutomationProperties.Name="Show annual offers"
+                        Command="{Binding ShowAnnualPlansCommand}" />
+              </Grid>
+            </Border>
 
-          <Button Classes="paywall-primary" TabIndex="3"
-                  AutomationProperties.Name="Fiktiven Demo-Kauf starten"
-                  Command="{Binding SelectPlanCommand}" CommandParameter="Subscription">
-            <TextBlock Text="JA! DIE 2 GEHÖRT MIR" Foreground="{DynamicResource PaywallButtonTextBrush}"
-                       FontSize="14" FontWeight="Black" />
-          </Button>
-          <Button Name="PaywallCloseButton" Classes="paywall-secondary" TabIndex="4"
-                  Content="{Binding PaywallCloseText}" AutomationProperties.Name="Paywall ablehnen"
-                  Command="{Binding ClosePaywallCommand}" />
-          <TextBlock Text="{Binding PaywallDismissalHint}" FontSize="10" TextAlignment="Center"
-                     Foreground="{DynamicResource PaywallSoftBrush}" />
+            <Grid>
+            <StackPanel Spacing="8"
+                        Opacity="{Binding MonthlyPlansOpacity}"
+                        IsEnabled="{Binding IsMonthlyPlans}"
+                        IsHitTestVisible="{Binding IsMonthlyPlans}">
+            <Button Name="PlanSingleCalculationButton" Classes="plan credit-pack" TabIndex="3"
+                    AutomationProperties.Name="Special offer, one result for 4.99 euros"
+                    Command="{Binding SelectPlanCommand}" CommandParameter="SingleCalculation">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <Border HorizontalAlignment="Left" CornerRadius="6" Padding="7,2"
+                          Background="{DynamicResource PaywallWarningBrush}">
+                    <TextBlock Text="SPECIAL OFFER" FontSize="8" FontWeight="Black"
+                               Foreground="{DynamicResource PaywallWarningTextBrush}" />
+                  </Border>
+                  <TextBlock Text="One premium result" FontSize="14" FontWeight="Bold" Foreground="White" />
+                  <TextBlock Text="Unlocks this calculation only" FontSize="10"
+                             Foreground="{DynamicResource PaywallSoftBrush}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                  <TextBlock Text="€4.99" FontSize="20" FontWeight="Black" TextAlignment="Right"
+                             Foreground="{DynamicResource PaywallAccentBrush}" />
+                  <TextBlock Text="ONE RESULT" FontSize="9" FontWeight="Bold" TextAlignment="Right" Foreground="White" />
+                </StackPanel>
+              </Grid>
+            </Button>
+            <Button Name="PlanMonthlyButton" Classes="plan credit-pack" TabIndex="4"
+                    AutomationProperties.Name="Monthly Ultra subscription, 74.99 euros per month"
+                    Command="{Binding SelectPlanCommand}" CommandParameter="Monthly">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <Border HorizontalAlignment="Left" CornerRadius="6" Padding="7,2"
+                          Background="{DynamicResource PaywallCyanBrush}">
+                    <TextBlock Text="MOST POPULAR" FontSize="8" FontWeight="Black"
+                               Foreground="{DynamicResource PaywallWarningTextBrush}" />
+                  </Border>
+                  <TextBlock Text="Monthly Ultra" FontSize="14" FontWeight="Bold" Foreground="White" />
+                  <TextBlock Text="Premium answers, billed monthly" FontSize="10"
+                             Foreground="{DynamicResource PaywallSoftBrush}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                  <TextBlock Text="€74.99" FontSize="20" FontWeight="Black" TextAlignment="Right"
+                             Foreground="{DynamicResource PaywallAccentBrush}" />
+                  <TextBlock Text="PER MONTH" FontSize="9" FontWeight="Bold" TextAlignment="Right" Foreground="White" />
+                </StackPanel>
+              </Grid>
+            </Button>
+            </StackPanel>
+
+            <StackPanel Spacing="8"
+                        Opacity="{Binding AnnualPlansOpacity}"
+                        IsEnabled="{Binding IsAnnualPlans}"
+                        IsHitTestVisible="{Binding IsAnnualPlans}">
+            <Button Name="PlanAnnualButton" Classes="plan credit-pack" TabIndex="3"
+                    AutomationProperties.Name="Annual Standard subscription, 499 euros per year"
+                    Command="{Binding SelectPlanCommand}" CommandParameter="Annual">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <Border HorizontalAlignment="Left" CornerRadius="6" Padding="7,2"
+                          Background="{DynamicResource PaywallCyanBrush}">
+                    <TextBlock Text="ANNUAL STANDARD" FontSize="8" FontWeight="Black"
+                               Foreground="{DynamicResource PaywallWarningTextBrush}" />
+                  </Border>
+                  <TextBlock Text="One year of results" FontSize="14" FontWeight="Bold" Foreground="White" />
+                  <TextBlock Text="No percentage calculations included" FontSize="10"
+                             Foreground="{DynamicResource PaywallSoftBrush}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                  <TextBlock Text="€499" FontSize="20" FontWeight="Black" TextAlignment="Right"
+                             Foreground="{DynamicResource PaywallAccentBrush}" />
+                  <TextBlock Text="PER YEAR" FontSize="9" FontWeight="Bold" TextAlignment="Right" Foreground="White" />
+                </StackPanel>
+              </Grid>
+            </Button>
+            <Button Name="PlanAnnualPremiumButton" Classes="plan credit-pack" TabIndex="4"
+                    AutomationProperties.Name="Annual Premium subscription, 699 euros, with one hundred percentage calculations"
+                    Command="{Binding SelectPlanCommand}" CommandParameter="AnnualPremium">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <Border HorizontalAlignment="Left" CornerRadius="6" Padding="7,2"
+                          Background="{DynamicResource PaywallWarningBrush}">
+                    <TextBlock Text="BEST VALUE + 100 %" FontSize="8" FontWeight="Black"
+                               Foreground="{DynamicResource PaywallWarningTextBrush}" />
+                  </Border>
+                  <TextBlock Text="Annual Premium" FontSize="14" FontWeight="Bold" Foreground="White" />
+                  <TextBlock Text="One year + 100 premium % calculations" FontSize="10"
+                             Foreground="{DynamicResource PaywallSoftBrush}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                  <TextBlock Text="€699" FontSize="20" FontWeight="Black" TextAlignment="Right"
+                             Foreground="{DynamicResource PaywallAccentBrush}" />
+                  <TextBlock Text="PREMIUM YEAR" FontSize="9" FontWeight="Bold" TextAlignment="Right" Foreground="White" />
+                </StackPanel>
+              </Grid>
+            </Button>
+            </StackPanel>
+            </Grid>
+          </StackPanel>
+
+          <StackPanel Spacing="8"
+                      Opacity="{Binding PremiumPercentOfferOpacity}"
+                      IsEnabled="{Binding IsPremiumPercentPaywall}"
+                      IsHitTestVisible="{Binding IsPremiumPercentPaywall}">
+            <Button Name="PercentPackOneButton" Classes="plan credit-pack" TabIndex="1"
+                    AutomationProperties.Name="One premium percentage calculation, 9.99 euros"
+                    Command="{Binding SelectPremiumPercentPackCommand}" CommandParameter="One">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel>
+                  <TextBlock Text="ONE-TIME % PASS" FontSize="13" FontWeight="Black" Foreground="White" />
+                  <TextBlock Text="One calculation. Infinite status." FontSize="10"
+                             Foreground="{DynamicResource PaywallSoftBrush}" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="€9.99" FontSize="20" FontWeight="Black"
+                           Foreground="{DynamicResource PaywallAccentBrush}" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
+            <Button Name="PercentPackTenButton" Classes="plan credit-pack" TabIndex="2"
+                    AutomationProperties.Name="Ten premium percentage calculations, 69.99 euros"
+                    Command="{Binding SelectPremiumPercentPackCommand}" CommandParameter="Ten">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel>
+                  <TextBlock Text="TEN % CALCULATIONS" FontSize="13" FontWeight="Black" Foreground="White" />
+                  <TextBlock Text="Imaginary best value" FontSize="10"
+                             Foreground="{DynamicResource PaywallSoftBrush}" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="€69.99" FontSize="20" FontWeight="Black"
+                           Foreground="{DynamicResource PaywallAccentBrush}" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
+            <Button Name="PercentPackHundredButton" Classes="plan credit-pack" TabIndex="3"
+                    AutomationProperties.Name="One hundred premium percentage calculations, 599 euros"
+                    Command="{Binding SelectPremiumPercentPackCommand}" CommandParameter="Hundred">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel>
+                  <TextBlock Text="CORPORATE % VAULT" FontSize="13" FontWeight="Black" Foreground="White" />
+                  <TextBlock Text="For quarterly percentage emergencies" FontSize="10"
+                             Foreground="{DynamicResource PaywallSoftBrush}" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="€599" FontSize="20" FontWeight="Black"
+                           Foreground="{DynamicResource PaywallAccentBrush}" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
+          </StackPanel>
+          </Grid>
         </StackPanel>
       </Border>
+      <Button Name="PaywallCloseButton" Classes="paywall-secondary" TabIndex="4"
+              ZIndex="3"
+              Opacity="{Binding PaywallOpacity}"
+              Width="224" Height="38"
+              Margin="0,0,0,18"
+              HorizontalAlignment="Center" VerticalAlignment="Bottom"
+              Content="{Binding PaywallCloseText}" AutomationProperties.Name="Reject premium offer"
+              PointerEntered="OnPaywallClosePointerEntered"
+              PointerPressed="OnPaywallClosePointerPressed"
+              KeyDown="OnPaywallCloseKeyDown" />
     </Grid>
 
     <Grid Name="CheckoutLayer" IsVisible="{Binding IsCheckoutVisible}"
@@ -265,26 +409,38 @@
               Background="{DynamicResource GlassStrongBrush}"
               BorderBrush="{DynamicResource GlassEdgeStrongBrush}" BorderThickness="1"
               CornerRadius="26" Padding="24,22">
-        <Border.Effect><DropShadowEffect Color="#B0000000" BlurRadius="28" OffsetY="14" Opacity="0.65" /></Border.Effect>
         <StackPanel Spacing="16">
-          <TextBlock Classes="title" Text="Fast reich geworden." TextWrapping="Wrap" />
+          <TextBlock Classes="title" Text="Almost financially irresponsible." TextWrapping="Wrap" />
           <TextBlock Text="{Binding CheckoutPlanLine}" FontSize="16" FontWeight="SemiBold" />
           <TextBlock Text="{Binding CheckoutNoteLine}" Classes="secondary" TextWrapping="Wrap" />
           <Border Padding="12" CornerRadius="12" Background="{DynamicResource GlassBrush}">
-            <TextBlock Text="Parodie: Es wird nichts berechnet und keine Zahlungsinformation erfasst."
+            <TextBlock Text="Parody notice: Nothing is charged and no payment information is collected."
                        Classes="secondary" FontSize="11" TextWrapping="Wrap" />
           </Border>
           <Button Name="CheckoutConfirmButton" Classes="paywall-primary" TabIndex="1"
-                  AutomationProperties.Name="Fiktiven Kauf bestätigen"
+                  AutomationProperties.Name="Confirm purchase"
                   Command="{Binding ConfirmPurchaseCommand}">
-            <TextBlock Text="Fiktiven Kauf bestätigen" Foreground="{DynamicResource PaywallButtonTextBrush}"
+            <TextBlock Text="Confirm purchase" Foreground="{DynamicResource PaywallButtonTextBrush}"
                        FontSize="14" FontWeight="SemiBold" />
           </Button>
           <Button Name="CheckoutCancelButton" Classes="glass" TabIndex="2" MinHeight="42"
-                  Content="Zurück" AutomationProperties.Name="Zurück"
+                  Content="Back" AutomationProperties.Name="Back"
                   Command="{Binding CancelPurchaseCommand}" />
         </StackPanel>
       </Border>
     </Grid>
+
+    <Panel Name="CelebrationLayer" IsVisible="False" IsHitTestVisible="False">
+      <Canvas Name="ConfettiCanvas" />
+      <Border Name="PurchaseToast"
+              HorizontalAlignment="Center" VerticalAlignment="Top"
+              Margin="20,72,20,0" Padding="22,14" CornerRadius="18"
+              Background="{DynamicResource PaywallWarningBrush}"
+              BorderBrush="White" BorderThickness="2">
+        <TextBlock Text="{Binding PurchaseCelebrationText}"
+                   FontSize="14" FontWeight="Black" TextAlignment="Center" TextWrapping="Wrap"
+                   Foreground="{DynamicResource PaywallWarningTextBrush}" />
+      </Border>
+    </Panel>
   </Panel>
 </Window>
