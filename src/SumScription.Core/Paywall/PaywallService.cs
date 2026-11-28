@@ -67,6 +67,39 @@ public sealed class PaywallService
         return IsResultVisible;
     }
 
+    /// <summary>
+    /// Records an application launch and returns whether the fake update notice is due.
+    /// The supplied interval schedules the following notice two to four launches later.
+    /// </summary>
+    public bool RegisterLaunch(int nextNoticeInterval)
+    {
+        if (nextNoticeInterval is < 2 or > 4)
+        {
+            throw new ArgumentOutOfRangeException(nameof(nextNoticeInterval));
+        }
+
+        var launchCount = State.AppLaunchCount + 1;
+        var nextNoticeLaunch = State.NextUpdateNoticeLaunch;
+        if (nextNoticeLaunch <= 0)
+        {
+            nextNoticeLaunch = nextNoticeInterval;
+        }
+
+        var shouldShowNotice = launchCount >= nextNoticeLaunch;
+        if (shouldShowNotice)
+        {
+            nextNoticeLaunch = launchCount + nextNoticeInterval;
+        }
+
+        State = State with
+        {
+            AppLaunchCount = launchCount,
+            NextUpdateNoticeLaunch = nextNoticeLaunch,
+        };
+        SavePersistentState();
+        return shouldShowNotice;
+    }
+
     /// <summary>Fictionally unlocks results and stores the selected plan.</summary>
     public void Unlock(PaywallPlan plan)
     {
@@ -134,6 +167,8 @@ public sealed class PaywallService
             Math.Max(0, state.SuccessfulEvaluations),
             state.IsUnlocked,
             state.IsUnlocked ? state.Plan : PaywallPlan.None,
-            Math.Max(0, state.PremiumPercentCredits));
+            Math.Max(0, state.PremiumPercentCredits),
+            Math.Max(0, state.AppLaunchCount),
+            Math.Max(0, state.NextUpdateNoticeLaunch));
     }
 }

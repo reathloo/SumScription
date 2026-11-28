@@ -67,6 +67,21 @@ public sealed class JsonFilePaywallStateStoreTests : IDisposable
         Assert.Equal(new PaywallState(3, false, PaywallPlan.None), store.Load());
     }
 
+    [Fact]
+    public void LegacyStateWithoutLaunchFields_LoadsWithUnscheduledNotice()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(
+            _path,
+            """{ "SuccessfulEvaluations": 3, "IsUnlocked": false, "Plan": "None", "PremiumPercentCredits": 0 }""");
+
+        var state = new JsonFilePaywallStateStore(_path).Load();
+
+        Assert.Equal(3, state.SuccessfulEvaluations);
+        Assert.Equal(0, state.AppLaunchCount);
+        Assert.Equal(0, state.NextUpdateNoticeLaunch);
+    }
+
     [Theory]
     [InlineData(PaywallPlan.Monthly)]
     [InlineData(PaywallPlan.Annual)]

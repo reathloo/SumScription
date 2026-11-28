@@ -5,6 +5,47 @@ namespace SumScription.Core.Tests;
 public sealed class PaywallServiceTests
 {
     [Fact]
+    public void FakeUpdateNotice_AppearsOnScheduledLaunchAndReschedules()
+    {
+        var service = new PaywallService(new FakePaywallStateStore());
+
+        Assert.False(service.RegisterLaunch(3));
+        Assert.False(service.RegisterLaunch(3));
+        Assert.True(service.RegisterLaunch(3));
+        Assert.False(service.RegisterLaunch(3));
+        Assert.False(service.RegisterLaunch(3));
+        Assert.True(service.RegisterLaunch(3));
+
+        Assert.Equal(6, service.State.AppLaunchCount);
+        Assert.Equal(9, service.State.NextUpdateNoticeLaunch);
+    }
+
+    [Fact]
+    public void FakeUpdateNoticeSchedule_SurvivesServiceReload()
+    {
+        var store = new FakePaywallStateStore();
+        var firstRun = new PaywallService(store);
+
+        Assert.False(firstRun.RegisterLaunch(2));
+
+        var secondRun = new PaywallService(store);
+
+        Assert.True(secondRun.RegisterLaunch(4));
+        Assert.Equal(2, secondRun.State.AppLaunchCount);
+        Assert.Equal(6, secondRun.State.NextUpdateNoticeLaunch);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    public void FakeUpdateNotice_RejectsIntervalsOutsideTwoToFourLaunches(int interval)
+    {
+        var service = new PaywallService(new FakePaywallStateStore());
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => service.RegisterLaunch(interval));
+    }
+
+    [Fact]
     public void FreeEvaluations_AreVisibleUntilConfiguredTrigger()
     {
         var service = new PaywallService(new FakePaywallStateStore());
