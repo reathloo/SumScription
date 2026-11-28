@@ -17,6 +17,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private bool _paywallShownThisRun;
     private bool _isPaywallVisible;
     private bool _isCheckoutVisible;
+    private bool _isTipVisible;
+    private bool _isUpdateNoticeVisible;
+    private bool _isDivisionByZeroVisible;
+    private bool _tipShownThisRun;
+    private int _visibleEvaluationsThisRun;
+    private readonly int _tipTriggerEvaluation;
     private int _paywallDismissalStep;
     private PaywallReason _paywallReason;
     private bool _pendingPercent;
@@ -30,10 +36,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private bool _isResultMasked;
 
     /// <summary>Creates the view model for a calculator session.</summary>
-    public MainWindowViewModel(CalculatorSession session)
+    public MainWindowViewModel(
+        CalculatorSession session,
+        bool showUpdateNotice = false,
+        int? tipTriggerEvaluation = null)
     {
         ArgumentNullException.ThrowIfNull(session);
         _session = session;
+        _tipTriggerEvaluation = tipTriggerEvaluation ?? int.MaxValue;
+        if (tipTriggerEvaluation.HasValue && _tipTriggerEvaluation is < 2 or > 4)
+        {
+            throw new ArgumentOutOfRangeException(nameof(tipTriggerEvaluation));
+        }
+
+        _isUpdateNoticeVisible = showUpdateNotice;
 
         DigitCommand = new RelayCommand(parameter => RunDigit(AsText(parameter)));
         SeparatorCommand = new RelayCommand(_ => Run(Separator));
@@ -51,6 +67,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         SelectPremiumPercentPackCommand = new RelayCommand(parameter => SelectPremiumPercentPack(AsText(parameter)));
         ConfirmPurchaseCommand = new RelayCommand(_ => ConfirmPurchase());
         CancelPurchaseCommand = new RelayCommand(_ => CancelCheckout());
+        DismissUpdateNoticeCommand = new RelayCommand(_ => DismissUpdateNotice());
+        SelectTipCommand = new RelayCommand(parameter => SelectTip(AsText(parameter)));
+        DeclineTipCommand = new RelayCommand(_ => DeclineTip());
+        DismissDivisionByZeroCommand = new RelayCommand(_ => DismissDivisionByZero());
 
         Refresh();
     }
@@ -78,6 +98,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     /// <summary>A fictional purchase completed and should be celebrated.</summary>
     public event EventHandler? PurchaseCompleted;
+
+    /// <summary>A small parody overlay opened.</summary>
+    public event EventHandler? NoveltyOverlayOpened;
 
     /// <inheritdoc />
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -129,6 +152,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     /// <summary>Cancels fictional checkout.</summary>
     public RelayCommand CancelPurchaseCommand { get; }
+
+    /// <summary>Dismisses the occasional fake update notice.</summary>
+    public RelayCommand DismissUpdateNoticeCommand { get; }
+
+    /// <summary>Selects a fictional calculator tip.</summary>
+    public RelayCommand SelectTipCommand { get; }
+
+    /// <summary>Declines the fictional calculator tip.</summary>
+    public RelayCommand DeclineTipCommand { get; }
+
+    /// <summary>Closes the division-by-zero enterprise notice.</summary>
+    public RelayCommand DismissDivisionByZeroCommand { get; }
 
     /// <summary>The visible expression.</summary>
     public string ExpressionText
@@ -242,8 +277,34 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>Whether the fictional tipping prompt is visible.</summary>
+    public bool IsTipVisible
+    {
+        get => _isTipVisible;
+        private set => SetOverlayField(ref _isTipVisible, value);
+    }
+
+    /// <summary>Whether the occasional fake update notice is visible.</summary>
+    public bool IsUpdateNoticeVisible
+    {
+        get => _isUpdateNoticeVisible;
+        private set => SetOverlayField(ref _isUpdateNoticeVisible, value);
+    }
+
+    /// <summary>Whether division by zero requires an enterprise consultation.</summary>
+    public bool IsDivisionByZeroVisible
+    {
+        get => _isDivisionByZeroVisible;
+        private set => SetOverlayField(ref _isDivisionByZeroVisible, value);
+    }
+
     /// <summary>Whether an overlay currently captures keyboard input.</summary>
-    public bool IsOverlayOpen => IsPaywallVisible || IsCheckoutVisible;
+    public bool IsOverlayOpen =>
+        IsPaywallVisible ||
+        IsCheckoutVisible ||
+        IsTipVisible ||
+        IsUpdateNoticeVisible ||
+        IsDivisionByZeroVisible;
 
     /// <summary>Banner copy for the current parody offer.</summary>
     public string PaywallBanner => IsPremiumPercentPaywall
@@ -378,6 +439,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         else if (_session.HasError)
         {
             ErrorAppeared?.Invoke(this, EventArgs.Empty);
+            if (_session.Error == CalculatorError.DivisionByZero)
+            {
+                IsDivisionByZeroVisible = true;
+                NoveltyOverlayOpened?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         if (evaluated && _session.IsResultMasked && !_paywallShownThisRun)
@@ -386,7 +452,86 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             RaisePropertyChanged(nameof(CanReopenPaywall));
             RaisePropertyChanged(nameof(IsShopIconVisible));
             OpenPaywall();
+            return;
         }
+
+        if (evaluated && !_session.IsResultMasked)
+        {
+            _visibleEvaluationsThisRun++;
+            if (!_tipShownThisRun && _visibleEvaluationsThisRun >= _tipTriggerEvaluation)
+            {
+                _tipShownThisRun = true;
+                IsTipVisible = true;
+                NoveltyOverlayOpened?.Invoke(this, EventArgs.Empty);
+            }
+        }
+    }
+
+    /// <summary>Dismisses whichever small parody overlay is currently visible.</summary>
+    public void DismissNoveltyOverlay()
+    {
+        if (IsUpdateNoticeVisible)
+        {
+            DismissUpdateNotice();
+        }
+        else if (IsTipVisible)
+        {
+            DeclineTip();
+        }
+        else if (IsDivisionByZeroVisible)
+        {
+            DismissDivisionByZero();
+        }
+    }
+
+    /// <summary>Dismisses the occasional fake update notice.</summary>
+    public void DismissUpdateNotice()
+    {
+        if (!IsUpdateNoticeVisible)
+        {
+            return;
+        }
+
+        IsUpdateNoticeVisible = false;
+        OverlaysClosed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Accepts a fictional calculator tip and celebrates the excellent decision.</summary>
+    public void SelectTip(string percentage)
+    {
+        if (!IsTipVisible || percentage is not ("25" or "40" or "75"))
+        {
+            return;
+        }
+
+        PurchaseCelebrationText = $"{percentage}% TIP ACCEPTED · YOUR CALCULATOR FEELS SEEN ✨";
+        IsTipVisible = false;
+        PurchaseCompleted?.Invoke(this, EventArgs.Empty);
+        OverlaysClosed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Declines the fictional calculator tip.</summary>
+    public void DeclineTip()
+    {
+        if (!IsTipVisible)
+        {
+            return;
+        }
+
+        IsTipVisible = false;
+        OverlaysClosed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Closes the division-by-zero enterprise notice.</summary>
+    public void DismissDivisionByZero()
+    {
+        if (!IsDivisionByZeroVisible)
+        {
+            return;
+        }
+
+        IsDivisionByZeroVisible = false;
+        OverlaysClosed?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>Toggles the sign.</summary>
@@ -748,6 +893,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         field = value;
         RaisePropertyChanged(propertyName);
         return true;
+    }
+
+    private void SetOverlayField(
+        ref bool field,
+        bool value,
+        [CallerMemberName] string? propertyName = null)
+    {
+        if (!SetField(ref field, value, propertyName))
+        {
+            return;
+        }
+
+        RaisePropertyChanged(nameof(IsOverlayOpen));
+        RaisePropertyChanged(nameof(IsShopIconVisible));
     }
 
     private void RaisePropertyChanged(string? propertyName) =>

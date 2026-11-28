@@ -7,6 +7,67 @@ namespace SumScription.Core.Tests;
 public sealed class PaywallViewModelTests
 {
     [Fact]
+    public void FakeUpdateNotice_CanBeShownAtStartupAndDismissed()
+    {
+        var viewModel = new MainWindowViewModel(
+            new CalculatorSession(new PaywallService(new FakePaywallStateStore())),
+            showUpdateNotice: true);
+
+        Assert.True(viewModel.IsUpdateNoticeVisible);
+        Assert.True(viewModel.IsOverlayOpen);
+
+        viewModel.DismissUpdateNotice();
+
+        Assert.False(viewModel.IsUpdateNoticeVisible);
+        Assert.False(viewModel.IsOverlayOpen);
+    }
+
+    [Fact]
+    public void TipPrompt_AppearsOnceAndAcceptedTipUsesExistingCelebration()
+    {
+        var viewModel = new MainWindowViewModel(
+            new CalculatorSession(new PaywallService(new FakePaywallStateStore())),
+            tipTriggerEvaluation: 2);
+        var purchaseEvents = 0;
+        viewModel.PurchaseCompleted += (_, _) => purchaseEvents++;
+
+        EvaluateSuccessfully(viewModel, 1);
+        Assert.False(viewModel.IsTipVisible);
+
+        EvaluateSuccessfully(viewModel, 1);
+        Assert.True(viewModel.IsTipVisible);
+
+        viewModel.SelectTip("40");
+
+        Assert.False(viewModel.IsTipVisible);
+        Assert.Equal(1, purchaseEvents);
+        Assert.Equal("40% TIP ACCEPTED · YOUR CALCULATOR FEELS SEEN ✨", viewModel.PurchaseCelebrationText);
+
+        EvaluateSuccessfully(viewModel, 2);
+        Assert.False(viewModel.IsTipVisible);
+    }
+
+    [Fact]
+    public void DivisionByZero_OpensEnterpriseNoticeWithoutCountingAsEvaluation()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.TypeDigit('1');
+        viewModel.TypeOperator('/');
+        viewModel.TypeDigit('0');
+
+        viewModel.Evaluate();
+
+        Assert.True(viewModel.IsDivisionByZeroVisible);
+        Assert.True(viewModel.IsOverlayOpen);
+        Assert.Equal("Cannot divide by zero", viewModel.DisplayResult);
+
+        viewModel.DismissDivisionByZero();
+
+        Assert.False(viewModel.IsDivisionByZeroVisible);
+        Assert.False(viewModel.IsOverlayOpen);
+    }
+
+    [Fact]
     public void Paywall_AppearsOnlyAfterQuota_AndNeedsThreeDismissals()
     {
         var viewModel = CreateViewModel();

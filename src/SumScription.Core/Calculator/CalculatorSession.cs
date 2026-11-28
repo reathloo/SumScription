@@ -41,6 +41,9 @@ public sealed class CalculatorSession
     /// <summary>Whether an error is visible.</summary>
     public bool HasError => _engine.HasError;
 
+    /// <summary>The current calculator error.</summary>
+    public CalculatorError Error => _engine.Error;
+
     /// <summary>Whether the displayed result is masked.</summary>
     public bool IsResultMasked { get; private set; }
 
