@@ -430,6 +430,134 @@
       </Border>
     </Grid>
 
+    <Grid Name="UpdateNoticeLayer" IsVisible="{Binding IsUpdateNoticeVisible}"
+          KeyboardNavigation.TabNavigation="Cycle"
+          Background="{DynamicResource ScrimBrush}">
+      <Border MaxWidth="360" Margin="24"
+              HorizontalAlignment="Stretch" VerticalAlignment="Center"
+              Background="{DynamicResource GlassStrongBrush}"
+              BorderBrush="{DynamicResource GlassEdgeStrongBrush}" BorderThickness="1"
+              CornerRadius="28" Padding="24,22">
+        <StackPanel Spacing="15">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="13">
+            <Border Width="52" Height="52" CornerRadius="17"
+                    Background="{DynamicResource OperatorBrush}">
+              <TextBlock Text="↻" FontSize="29" FontWeight="Bold"
+                         Foreground="{DynamicResource OperatorTextBrush}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock Text="Update successfully installed" FontSize="18" FontWeight="Bold"
+                         TextWrapping="Wrap" />
+              <TextBlock Text="Without asking. You're welcome." Classes="secondary" FontSize="12" />
+            </StackPanel>
+          </Grid>
+
+          <Border Padding="15,13" CornerRadius="16" Background="{DynamicResource GlassBrush}">
+            <StackPanel Spacing="9">
+              <TextBlock Text="What’s new" FontSize="13" FontWeight="SemiBold" />
+              <TextBlock Text="• Improved purchasing opportunities by 31%." Classes="secondary"
+                         FontSize="12" TextWrapping="Wrap" />
+              <TextBlock Text="• Fixed a rare issue where the calculator focused on calculations."
+                         Classes="secondary" FontSize="12" TextWrapping="Wrap" />
+              <TextBlock Text="• Added several innovations requested by our revenue department."
+                         Classes="secondary" FontSize="12" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <Button Name="UpdateNoticeContinueButton" Classes="paywall-primary" TabIndex="1"
+                  Content="Enjoy the improvements"
+                  AutomationProperties.Name="Dismiss update notice"
+                  Command="{Binding DismissUpdateNoticeCommand}" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Name="TipLayer" IsVisible="{Binding IsTipVisible}"
+          KeyboardNavigation.TabNavigation="Cycle"
+          Background="{DynamicResource ScrimBrush}">
+      <Border MaxWidth="360" Margin="24"
+              HorizontalAlignment="Stretch" VerticalAlignment="Center"
+              Background="{DynamicResource GlassStrongBrush}"
+              BorderBrush="{DynamicResource GlassEdgeStrongBrush}" BorderThickness="1"
+              CornerRadius="28" Padding="24,22">
+        <StackPanel Spacing="16">
+          <TextBlock Text="Your result was served successfully." Classes="secondary"
+                     FontSize="12" TextAlignment="Center" />
+          <TextBlock Text="Tip your calculator?" Classes="title"
+                     TextAlignment="Center" TextWrapping="Wrap" />
+          <TextBlock Text="It carried the one all by itself and would appreciate recognition."
+                     Classes="secondary" FontSize="13" TextAlignment="Center" TextWrapping="Wrap" />
+
+          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+            <Button Classes="plan" MinHeight="72" Padding="8" TabIndex="1"
+                    AutomationProperties.Name="Tip 25 percent"
+                    Command="{Binding SelectTipCommand}" CommandParameter="25">
+              <StackPanel>
+                <TextBlock Text="25%" FontSize="22" FontWeight="Bold" TextAlignment="Center" />
+                <TextBlock Text="STANDARD" FontSize="8" FontWeight="Bold" TextAlignment="Center"
+                           Foreground="{DynamicResource TextSecondaryBrush}" />
+              </StackPanel>
+            </Button>
+            <Button Grid.Column="1" Classes="plan" MinHeight="72" Padding="8" TabIndex="2"
+                    Background="{DynamicResource PaywallCyanBrush}"
+                    AutomationProperties.Name="Tip 40 percent, recommended"
+                    Command="{Binding SelectTipCommand}" CommandParameter="40">
+              <StackPanel>
+                <TextBlock Text="40%" FontSize="22" FontWeight="Black" TextAlignment="Center"
+                           Foreground="{DynamicResource PaywallButtonTextBrush}" />
+                <TextBlock Text="RECOMMENDED" FontSize="8" FontWeight="Black" TextAlignment="Center"
+                           Foreground="{DynamicResource PaywallButtonTextBrush}" />
+              </StackPanel>
+            </Button>
+            <Button Grid.Column="2" Classes="plan" MinHeight="72" Padding="8" TabIndex="3"
+                    AutomationProperties.Name="Tip 75 percent"
+                    Command="{Binding SelectTipCommand}" CommandParameter="75">
+              <StackPanel>
+                <TextBlock Text="75%" FontSize="22" FontWeight="Bold" TextAlignment="Center" />
+                <TextBlock Text="VISIONARY" FontSize="8" FontWeight="Bold" TextAlignment="Center"
+                           Foreground="{DynamicResource TextSecondaryBrush}" />
+              </StackPanel>
+            </Button>
+          </Grid>
+
+          <Button Name="TipDeclineButton" Classes="glass" MinHeight="40" TabIndex="4"
+                  Content="No tip — the numbers felt cold"
+                  AutomationProperties.Name="Decline calculator tip"
+                  Command="{Binding DeclineTipCommand}" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Name="DivisionByZeroLayer" IsVisible="{Binding IsDivisionByZeroVisible}"
+          KeyboardNavigation.TabNavigation="Cycle"
+          Background="{DynamicResource ScrimBrush}">
+      <Border MaxWidth="360" Margin="24"
+              HorizontalAlignment="Stretch" VerticalAlignment="Center"
+              Background="{DynamicResource GlassStrongBrush}"
+              BorderBrush="{DynamicResource GlassEdgeStrongBrush}" BorderThickness="1"
+              CornerRadius="28" Padding="24,22">
+        <StackPanel Spacing="15">
+          <Border HorizontalAlignment="Left" CornerRadius="8" Padding="9,5"
+                  Background="{DynamicResource PaywallWarningBrush}">
+            <TextBlock Text="ENTERPRISE MATHEMATICS" FontSize="9" FontWeight="Black"
+                       Foreground="{DynamicResource PaywallWarningTextBrush}" />
+          </Border>
+          <TextBlock Text="Zero has declined the meeting." Classes="title" TextWrapping="Wrap" />
+          <TextBlock Text="Division by zero is currently available only through our Enterprise Consultation Programme. Pricing begins after we understand your organisation’s relationship with reality."
+                     Classes="secondary" FontSize="13" LineHeight="19" TextWrapping="Wrap" />
+          <Border Padding="13" CornerRadius="14" Background="{DynamicResource GlassBrush}">
+            <TextBlock Text="Reference: MATH-0/0 · Severity: commercially promising"
+                       Classes="secondary" FontSize="11" TextWrapping="Wrap" />
+          </Border>
+          <Button Name="DivisionByZeroDismissButton" Classes="paywall-primary" TabIndex="1"
+                  Content="Return to supported reality"
+                  AutomationProperties.Name="Dismiss division by zero notice"
+                  Command="{Binding DismissDivisionByZeroCommand}" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
     <Panel Name="CelebrationLayer" IsVisible="False" IsHitTestVisible="False">
       <Canvas Name="ConfettiCanvas" />
       <Border Name="PurchaseToast"

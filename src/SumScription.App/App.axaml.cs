@@ -25,7 +25,11 @@ public sealed class App : Application
                 PaywallService.MaximumPaywallTriggerEvaluation + 1);
             var session = new CalculatorSession(
                 new PaywallService(JsonFilePaywallStateStore.CreateDefault(), triggerEvaluation));
-            var viewModel = new MainWindowViewModel(session);
+            var showUpdateNotice = session.Paywall.RegisterLaunch(Random.Shared.Next(2, 5));
+            var viewModel = new MainWindowViewModel(
+                session,
+                showUpdateNotice,
+                Random.Shared.Next(2, 4));
             desktop.MainWindow = new MainWindow(viewModel);
             var bundledIconPath = Path.GetFullPath(
                 Path.Combine(AppContext.BaseDirectory, "..", "Resources", "app-icon.png"));

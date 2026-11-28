@@ -52,6 +52,21 @@ public partial class MainWindow : Window
 
         if (_viewModel is { } viewModel && !e.Handled)
         {
+            if (viewModel.IsUpdateNoticeVisible || viewModel.IsTipVisible || viewModel.IsDivisionByZeroVisible)
+            {
+                if (e.Key == Key.Escape)
+                {
+                    viewModel.DismissNoveltyOverlay();
+                    e.Handled = true;
+                }
+                else
+                {
+                    base.OnKeyDown(e);
+                }
+
+                return;
+            }
+
             if (viewModel.IsCheckoutVisible)
             {
                 if (e.Key == Key.Escape)
@@ -105,7 +120,14 @@ public partial class MainWindow : Window
             Motion.DisableTransitions(this);
         }
 
-        AcButton.Focus();
+        if (_viewModel?.IsUpdateNoticeVisible == true)
+        {
+            UpdateNoticeContinueButton.Focus();
+        }
+        else
+        {
+            AcButton.Focus();
+        }
     }
 
     // The only place that evaluates Enter: this tunnel handler runs before all buttons and
@@ -145,6 +167,7 @@ public partial class MainWindow : Window
             viewModel.CheckoutOpened -= OnCheckoutOpened;
             viewModel.CheckoutClosed -= OnCheckoutClosed;
             viewModel.PurchaseCompleted -= OnPurchaseCompleted;
+            viewModel.NoveltyOverlayOpened -= OnNoveltyOverlayOpened;
             viewModel.OverlaysClosed -= OnOverlaysClosed;
             _viewModel = null;
         }
@@ -165,6 +188,7 @@ public partial class MainWindow : Window
         viewModel.CheckoutOpened += OnCheckoutOpened;
         viewModel.CheckoutClosed += OnCheckoutClosed;
         viewModel.PurchaseCompleted += OnPurchaseCompleted;
+        viewModel.NoveltyOverlayOpened += OnNoveltyOverlayOpened;
         viewModel.OverlaysClosed += OnOverlaysClosed;
     }
 
@@ -515,6 +539,26 @@ public partial class MainWindow : Window
 
     private void OnPurchaseCompleted(object? sender, EventArgs e) =>
         Dispatcher.UIThread.Post(() => _ = PlayPurchaseCelebrationAsync());
+
+    private void OnNoveltyOverlayOpened(object? sender, EventArgs e)
+    {
+        _previousFocus = FocusManager?.GetFocusedElement();
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (_viewModel?.IsTipVisible == true)
+            {
+                TipDeclineButton.Focus();
+            }
+            else if (_viewModel?.IsDivisionByZeroVisible == true)
+            {
+                DivisionByZeroDismissButton.Focus();
+            }
+            else if (_viewModel?.IsUpdateNoticeVisible == true)
+            {
+                UpdateNoticeContinueButton.Focus();
+            }
+        });
+    }
 
     private async Task PlayPurchaseCelebrationAsync()
     {
